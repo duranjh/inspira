@@ -1,0 +1,21 @@
+Welcome, {display_name}.
+
+Thank you for making an account. Inspira believes every idea deserves
+a canvas. You bring an idea, and the canvas opens around it —
+connected topics as cards you can move, rename, or cut.
+
+Click any card and a planner begins a conversation about that piece of
+the idea, asking the kind of questions you would want a patient
+collaborator to ask.
+
+Whenever you are ready, start your first map:
+{app_url}
+
+We are a small team. If something gets in the way of your thinking,
+reply to this note and we will read it.
+
+Warmly,
+The Inspira team
+
+—
+You are receiving this because you created an Inspira account at {app_url}.

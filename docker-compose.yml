@@ -1,0 +1,56 @@
+# Local Docker Compose for the Inspira stack.
+#
+# Usage:
+#   docker compose up --build
+#
+# Expects a .env at the repo root with at least OPENAI_API_KEY. Other
+# PLANNING_STUDIO_* vars fall through to the container defaults if unset.
+#
+# Volume layout: ./local/data on the host holds the SQLite DB and any
+# transcripts; mounted into the backend at /data. Matches the non-Docker
+# dev flow so data is portable between the two.
+
+services:
+  backend:
+    build:
+      context: ./services
+      dockerfile: Dockerfile
+    image: inspira-backend:local
+    container_name: inspira-backend
+    env_file:
+      - .env
+    environment:
+      PLANNING_STUDIO_HOST: 0.0.0.0
+      PLANNING_STUDIO_PORT: 4174
+      PLANNING_STUDIO_STORAGE_ROOT: /data
+      # DATABASE_URL is forwarded so the backend can target Postgres
+      # instead of the bundled SQLite store.
+      DATABASE_URL: ${DATABASE_URL:-}
+    volumes:
+      - ./local/data:/data
+    ports:
+      - "4174:4174"
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://127.0.0.1:4174/api/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+      args:
+        # The Vite bundler inlines this at build time. If you change it,
+        # rebuild (it's not readable at runtime from the compiled bundle).
+        VITE_INSPIRA_API_URL: http://localhost:4174
+    image: inspira-frontend:local
+    container_name: inspira-frontend
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "8080:80"
+    restart: unless-stopped

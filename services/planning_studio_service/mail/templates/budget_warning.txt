@@ -1,0 +1,13 @@
+A gentle note, {display_name}.
+
+You have used about {percent_used}% of today's planner budget. The
+planner will keep answering until you reach the cap, and then pause
+until the budget resets at {resets_at_human}.
+
+This is a soft signal, not a penalty. If you are mid-thought, keep
+going — you will know when you hit the limit.
+
+{upgrade_block}
+
+Warmly,
+The Inspira team

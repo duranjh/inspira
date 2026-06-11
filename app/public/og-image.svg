@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!--
+    Inspira Open Graph / Twitter card preview.
+    1200x630 is the standard aspect ratio major crawlers pick up.
+    Cream paper background, serif wordmark, sage accent dot — same
+    palette as the product so the social preview and the app feel
+    like one piece.
+
+    SVG is fine for most platforms now, but a PNG fallback may be
+    required for older LinkedIn/Slack previews; generate one from
+    this source before a real launch push.
+  -->
+  <rect width="1200" height="630" fill="#F5F0E6"/>
+
+  <!-- Subtle border / paper edge -->
+  <rect x="24" y="24" width="1152" height="582" rx="24" fill="none"
+        stroke="#2B2520" stroke-opacity="0.06" stroke-width="2"/>
+
+  <!-- Grid dots backdrop (very subtle) -->
+  <g fill="#2B2520" fill-opacity="0.05">
+    <circle cx="120" cy="120" r="2"/>
+    <circle cx="240" cy="120" r="2"/>
+    <circle cx="360" cy="120" r="2"/>
+    <circle cx="120" cy="240" r="2"/>
+    <circle cx="240" cy="240" r="2"/>
+    <circle cx="1080" cy="510" r="2"/>
+    <circle cx="960" cy="510" r="2"/>
+    <circle cx="1080" cy="390" r="2"/>
+  </g>
+
+  <!-- Eyebrow: small uppercase label -->
+  <text x="600" y="170"
+        text-anchor="middle"
+        font-family="'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace"
+        font-size="20"
+        letter-spacing="4"
+        fill="#847B72">
+    FROM FEEDBACK TO FEATURES
+  </text>
+
+  <!-- Wordmark: "Inspira" in italic serif, with sage dot accent -->
+  <g>
+    <text x="600" y="365"
+          text-anchor="middle"
+          font-family="'Source Serif 4', Georgia, 'Times New Roman', serif"
+          font-size="160"
+          font-style="italic"
+          font-weight="400"
+          fill="#2B2520">
+      Inspira
+    </text>
+    <!-- Sage accent dot above the 'i' tittle -->
+    <circle cx="430" cy="236" r="8" fill="#6A9A7A"/>
+  </g>
+
+  <!-- Tagline -->
+  <text x="600" y="460"
+        text-anchor="middle"
+        font-family="'Source Serif 4', Georgia, 'Times New Roman', serif"
+        font-size="34"
+        font-weight="400"
+        fill="#4A4038">
+    Customer feedback in. Inspira ships the work.
+  </text>
+
+  <!-- Footer URL placeholder -->
+  <text x="600" y="555"
+        text-anchor="middle"
+        font-family="'JetBrains Mono', 'IBM Plex Mono', ui-monospace, monospace"
+        font-size="18"
+        letter-spacing="2"
+        fill="#A8A096">
+    tryinspira.com
+  </text>
+</svg>

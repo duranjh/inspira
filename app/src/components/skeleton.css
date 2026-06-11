@@ -1,0 +1,155 @@
+/* Skeleton — styles for the new primitive + compositions in Skeleton.tsx.
+ *
+ * The base `.skeleton` class (shimmer keyframes, shared across the app)
+ * lives in App.css and is reused by everything in here. This stylesheet
+ * only adds:
+ *   - variant tweaks for `.skeleton--text` / `.skeleton--card` / `.skeleton--circle`
+ *   - the TopicNodeSkeleton card chrome (paper-2 background, ink border,
+ *     thin --ink-3 left accent)
+ *   - the TurnSkeleton bubble chrome (planner = paper-2 left, user =
+ *     sage-tinted right) plus a small status caption.
+ *
+ * No new keyframes — we deliberately reuse skeleton-shimmer (1.4s ease)
+ * so every skeleton on the page pulses in unison instead of an
+ * arrhythmic chorus.
+ */
+
+/* ---- Variant adjustments to the base .skeleton ------------------------- */
+
+/* `.skeleton--text` is the line variant — width/height come from inline
+   style set by <Skeleton>, this rule just locks `display: block` so the
+   element behaves like a paragraph line inside flex/grid layouts. */
+.skeleton--text {
+  display: block;
+}
+
+/* `.skeleton--card` uses a slightly larger default radius and reserves
+   internal padding so consumers nesting child skeletons inside it don't
+   bleed to the edge. We only set `display: block` here too — the gradient
+   and animation come from the base `.skeleton` rule. */
+.skeleton--card {
+  display: block;
+}
+
+/* `.skeleton--circle` keeps the gradient shimmer but locks aspect ratio
+   to 1:1 via inline width/height. The 50% radius default already lives
+   in the JSX so there's nothing extra to do here — present for symmetry
+   and easy future styling. */
+.skeleton--circle {
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* ---- TopicNodeSkeleton ------------------------------------------------- */
+
+/* Mirrors the live TopicNode footprint (~280×180 with a thin left accent
+   bar). The accent uses --ink-3 — the same fallback the live node uses
+   when no color tag is set — so the placeholder reads as a generic card,
+   not a specific colored topic. The card itself is paper-2 with an ink
+   border to match the populated state.
+*/
+.topic-node-skeleton {
+  width: 280px;
+  height: 180px;
+  padding: 14px 16px;
+  background: var(--paper-2);
+  border: 1px solid var(--ink-3, #c8b89a);
+  border-left: 3px solid var(--ink-3, #c8b89a);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-sizing: border-box;
+}
+
+.topic-node-skeleton__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.topic-node-skeleton__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ---- TurnSkeleton ------------------------------------------------------ */
+
+/* A single turn bubble + an optional caption underneath. The bubble shape
+   mirrors the live planner / user turn cards in TopicDetail: paper-2 for
+   the planner side, sage-tinted for the user side, both with a soft
+   border and 10px radius. Width is bounded so the bubble doesn't stretch
+   the full column on a wide thread.
+*/
+.turn-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.turn-skeleton--planner {
+  align-items: flex-start;
+}
+
+.turn-skeleton--user {
+  align-items: flex-end;
+}
+
+.turn-skeleton__bubble {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  max-width: 560px;
+  width: 80%;
+  box-sizing: border-box;
+  background: var(--paper-2);
+  border: 1px solid var(--paper-edge);
+}
+
+.turn-skeleton--user .turn-skeleton__bubble {
+  width: 50%;
+  background: color-mix(in srgb, var(--sage) 8%, var(--paper-2));
+  border-color: color-mix(in srgb, var(--sage) 20%, var(--paper-edge));
+}
+
+.turn-skeleton__status {
+  margin: 0;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--ink-3);
+  text-transform: uppercase;
+}
+
+.turn-skeleton--user .turn-skeleton__status {
+  text-align: right;
+}
+
+/* ---- SharedCanvasPage initial-load stage ------------------------------- */
+
+/* The shared-canvas page mounts these skeletons full-viewport while the
+   network round-trip resolves. Position is `relative` so each
+   TopicNodeSkeleton's absolute coords resolve against this stage rather
+   than the page. The cream background hints at the canvas backdrop the
+   real React Flow pane will paint.
+*/
+.shared-canvas-page__loading {
+  position: relative;
+  width: 100%;
+  min-height: 100vh; /* fallback for pre-dvh browsers (Safari < 15.4) */
+  min-height: 100dvh;
+  background: var(--paper-lifted, #fbf7ee);
+  overflow: hidden;
+}
+
+.shared-canvas-page__skeleton-stage {
+  position: absolute;
+  inset: 0;
+}
+
+/* Reduced motion: the base .skeleton rule in App.css already kills the
+   animation. Nothing to do here — no extra motion is introduced. */

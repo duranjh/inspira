@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Inspira — status</title>
+  <meta name="description" content="Current operational status of Inspira." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://status.tryinspira.com/" />
+
+  <!--
+    Inspira status page — single-file, self-contained. Drop this at
+    status.tryinspira.com. Reads live data from ./incidents.json (same
+    directory); if the fetch fails we fall back to "all operational" so
+    the page is never totally blank.
+
+    Palette mirrors app/src/App.css (warm editorial).
+  -->
+
+  <style>
+    :root {
+      --paper: #F5F0E6;
+      --paper-2: #eee6d6;
+      --paper-3: #e6dcc8;
+      --paper-edge: #dbcfb6;
+      --ink: #2B2520;
+      --ink-2: #4a413a;
+      --ink-3: #7a6f64;
+      --ink-4: #a89e91;
+      --sage: #6A9A7A;
+      --gold: #C89A4A;
+      --rust: #B06A50;
+      --border-soft: rgba(43, 37, 32, 0.08);
+
+      --ff-serif: "Source Serif 4", Georgia, "Times New Roman", serif;
+      --ff-sans: -apple-system, "Inter", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: var(--ff-sans);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .page {
+      max-width: 780px;
+      margin: 0 auto;
+      padding: 72px 28px 96px;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 48px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .header__title {
+      font-family: var(--ff-serif);
+      font-size: 36px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      margin: 0;
+    }
+    .header__link {
+      font-size: 14px;
+      color: var(--ink-3);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 120ms ease;
+    }
+    .header__link:hover {
+      border-bottom-color: var(--ink-3);
+    }
+
+    /* Current status banner */
+    .current {
+      text-align: center;
+      padding: 56px 24px;
+      margin-bottom: 48px;
+      border-radius: 4px;
+      background: var(--paper-2);
+      border: 1px solid var(--border-soft);
+    }
+    .current--operational { background: #ecf2ea; border-color: rgba(106, 154, 122, 0.3); }
+    .current--degraded    { background: #f5ebd8; border-color: rgba(200, 154, 74, 0.4); }
+    .current--outage      { background: #f0dcd1; border-color: rgba(176, 106, 80, 0.4); }
+
+    .current__indicator {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      margin-right: 12px;
+      vertical-align: middle;
+      background: var(--sage);
+    }
+    .current--degraded .current__indicator { background: var(--gold); }
+    .current--outage .current__indicator   { background: var(--rust); }
+
+    .current__headline {
+      display: inline-block;
+      font-family: var(--ff-serif);
+      font-size: 28px;
+      font-weight: 500;
+      letter-spacing: -0.005em;
+      vertical-align: middle;
+      margin: 0;
+    }
+
+    /* Section heading */
+    .section {
+      margin-bottom: 48px;
+    }
+    .section__heading {
+      font-family: var(--ff-serif);
+      font-size: 20px;
+      font-weight: 500;
+      margin: 0 0 20px;
+      color: var(--ink);
+    }
+
+    /* Components table */
+    .components {
+      border-top: 1px solid var(--border-soft);
+    }
+    .component {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr auto;
+      align-items: center;
+      gap: 20px;
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .component__name {
+      font-family: var(--ff-serif);
+      font-size: 17px;
+      color: var(--ink);
+    }
+    .component__status {
+      font-size: 14px;
+      color: var(--ink-2);
+    }
+    .component__status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      margin-right: 8px;
+      vertical-align: middle;
+      background: var(--sage);
+    }
+    .component__status--degraded .component__status-dot { background: var(--gold); }
+    .component__status--outage   .component__status-dot { background: var(--rust); }
+    .component__uptime {
+      display: flex;
+      gap: 2px;
+      justify-content: flex-end;
+    }
+    .uptime-dot {
+      width: 4px;
+      height: 18px;
+      background: var(--sage);
+      border-radius: 1px;
+      opacity: 0.75;
+    }
+    .uptime-dot--degraded { background: var(--gold); }
+    .uptime-dot--outage   { background: var(--rust); }
+    .uptime-dot--none     { background: var(--paper-edge); }
+
+    /* Incidents */
+    .incidents__empty {
+      color: var(--ink-3);
+      font-size: 15px;
+      padding: 12px 0;
+    }
+    .incident {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border-soft);
+    }
+    .incident__head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 6px;
+    }
+    .incident__title {
+      font-family: var(--ff-serif);
+      font-size: 17px;
+      font-weight: 500;
+      margin: 0;
+      color: var(--ink);
+    }
+    .incident__severity {
+      display: inline-block;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 2px;
+      color: var(--paper);
+      background: var(--ink-3);
+      flex-shrink: 0;
+    }
+    .incident__severity--minor    { background: var(--ink-3); }
+    .incident__severity--major    { background: var(--gold); }
+    .incident__severity--critical { background: var(--rust); }
+    .incident__meta {
+      color: var(--ink-3);
+      font-size: 13px;
+      margin-bottom: 8px;
+    }
+    .incident__resolution {
+      color: var(--ink-2);
+      font-size: 14px;
+      line-height: 1.55;
+      margin: 0;
+    }
+
+    /* Footer */
+    .footer {
+      margin-top: 72px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border-soft);
+      font-size: 13px;
+      color: var(--ink-3);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      justify-content: space-between;
+    }
+    .footer a {
+      color: var(--ink-3);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+    }
+    .footer a:hover {
+      border-bottom-color: var(--ink-3);
+    }
+    .footer__note {
+      color: var(--ink-4);
+      font-style: italic;
+    }
+
+    /* Small screens */
+    @media (max-width: 560px) {
+      .page { padding: 40px 18px 64px; }
+      .header__title { font-size: 28px; }
+      .current { padding: 40px 18px; }
+      .current__headline { font-size: 22px; }
+      .component {
+        grid-template-columns: 1fr;
+        gap: 8px;
+      }
+      .component__uptime { justify-content: flex-start; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="header">
+      <h1 class="header__title">Inspira &mdash; status</h1>
+      <a class="header__link" href="https://app.tryinspira.com" rel="noopener">Back to app &rarr;</a>
+    </header>
+
+    <section id="current" class="current current--operational" aria-live="polite">
+      <span class="current__indicator" aria-hidden="true"></span>
+      <h2 id="current-headline" class="current__headline">All systems operational</h2>
+    </section>
+
+    <section class="section">
+      <h3 class="section__heading">Components</h3>
+      <div id="components" class="components">
+        <!-- Rendered by script below. Defaults are inlined so this page is
+             never blank even if the JSON fetch fails. -->
+      </div>
+    </section>
+
+    <section class="section">
+      <h3 class="section__heading">Recent incidents</h3>
+      <div id="incidents">
+        <p class="incidents__empty">No incidents in the last 90 days.</p>
+      </div>
+    </section>
+
+    <footer class="footer">
+      <span>
+        Last updated: <time id="last-updated">&mdash;</time>
+      </span>
+      <span>
+        Questions? <a href="mailto:status@tryinspira.com">status@tryinspira.com</a>
+      </span>
+    </footer>
+  </main>
+
+  <script>
+    // --------------------------------------------------------------
+    // Inspira status page — client script
+    //
+    // Reads ./incidents.json (hosted alongside this HTML file).
+    // Falls back to "all operational" defaults if the fetch fails,
+    // so a broken CI job never leaves the page totally blank.
+    // --------------------------------------------------------------
+    (function () {
+      "use strict";
+
+      var DEFAULT_COMPONENTS = [
+        { name: "Website",        status: "operational", message: "" },
+        { name: "App",            status: "operational", message: "" },
+        { name: "Planner (LLM)",  status: "operational", message: "" },
+        { name: "Database",       status: "operational", message: "" },
+        { name: "Email delivery", status: "operational", message: "" }
+      ];
+
+      var DEFAULT_DATA = {
+        current_status: "operational",
+        components: DEFAULT_COMPONENTS,
+        incidents: [],
+        last_updated: new Date().toISOString()
+      };
+
+      function escapeHtml(text) {
+        return String(text || "").replace(/[&<>"']/g, function (ch) {
+          return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            "\"": "&quot;",
+            "'": "&#39;"
+          }[ch];
+        });
+      }
+
+      function formatDate(iso) {
+        if (!iso) return "—";
+        var d = new Date(iso);
+        if (isNaN(d.getTime())) return iso;
+        // e.g. "Apr 20, 2026, 14:05 UTC"
+        var opts = {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: "UTC"
+        };
+        try {
+          return d.toLocaleString("en-US", opts) + " UTC";
+        } catch (_e) {
+          return d.toISOString();
+        }
+      }
+
+      function durationText(startIso, endIso) {
+        if (!startIso || !endIso) return "ongoing";
+        var start = new Date(startIso).getTime();
+        var end = new Date(endIso).getTime();
+        if (isNaN(start) || isNaN(end) || end <= start) return "—";
+        var mins = Math.round((end - start) / 60000);
+        if (mins < 60) return mins + " min";
+        var hours = Math.floor(mins / 60);
+        var rem = mins % 60;
+        if (hours < 24) {
+          return rem ? hours + "h " + rem + "m" : hours + "h";
+        }
+        var days = Math.floor(hours / 24);
+        var hremain = hours % 24;
+        return hremain ? days + "d " + hremain + "h" : days + "d";
+      }
+
+      function headlineFor(status) {
+        switch (status) {
+          case "outage":  return "Major outage";
+          case "degraded": return "Partial outage";
+          case "operational":
+          default: return "All systems operational";
+        }
+      }
+
+      function renderCurrent(status) {
+        var banner = document.getElementById("current");
+        var headline = document.getElementById("current-headline");
+        banner.classList.remove(
+          "current--operational",
+          "current--degraded",
+          "current--outage"
+        );
+        var klass = "current--operational";
+        if (status === "degraded") klass = "current--degraded";
+        else if (status === "outage") klass = "current--outage";
+        banner.classList.add(klass);
+        headline.textContent = headlineFor(status);
+      }
+
+      function renderComponents(components, incidents) {
+        var host = document.getElementById("components");
+        host.innerHTML = "";
+        var dayBuckets = buildDayBuckets(incidents);
+        components.forEach(function (c) {
+          var row = document.createElement("div");
+          row.className = "component";
+          var statusKlass =
+            c.status === "outage" ? "component__status--outage" :
+            c.status === "degraded" ? "component__status--degraded" :
+            "";
+          var statusText =
+            c.status === "outage" ? "Outage" :
+            c.status === "degraded" ? "Degraded" :
+            "Operational";
+          row.innerHTML =
+            '<div class="component__name">' + escapeHtml(c.name) + '</div>' +
+            '<div class="component__status ' + statusKlass + '">' +
+              '<span class="component__status-dot" aria-hidden="true"></span>' +
+              escapeHtml(statusText) +
+              (c.message ? ' &mdash; ' + escapeHtml(c.message) : '') +
+            '</div>' +
+            '<div class="component__uptime" aria-label="Last 90 days">' +
+              buildUptimeDots(c.name, dayBuckets) +
+            '</div>';
+          host.appendChild(row);
+        });
+      }
+
+      // For each component, build 90 dots (oldest -> newest). A day is
+      // "outage" if any critical incident on that day mentions the
+      // component, "degraded" for minor/major, otherwise operational.
+      function buildDayBuckets(incidents) {
+        var buckets = {}; // { componentName: { dayIndex: worstStatus } }
+        var now = Date.now();
+        var dayMs = 24 * 60 * 60 * 1000;
+        (incidents || []).forEach(function (inc) {
+          var started = new Date(inc.started_at || 0).getTime();
+          var resolved = new Date(inc.resolved_at || inc.started_at || 0).getTime();
+          if (isNaN(started)) return;
+          var components = inc.affected_components || [];
+          var worst = inc.severity === "critical" ? "outage" : "degraded";
+          for (var t = started; t <= (isNaN(resolved) ? now : resolved); t += dayMs) {
+            var dayIdx = Math.floor((now - t) / dayMs);
+            if (dayIdx < 0 || dayIdx >= 90) continue;
+            components.forEach(function (cname) {
+              if (!buckets[cname]) buckets[cname] = {};
+              var prev = buckets[cname][dayIdx];
+              if (prev !== "outage") buckets[cname][dayIdx] = worst;
+            });
+          }
+        });
+        return buckets;
+      }
+
+      function buildUptimeDots(componentName, dayBuckets) {
+        var parts = [];
+        var map = (dayBuckets && dayBuckets[componentName]) || {};
+        for (var i = 89; i >= 0; i--) {
+          var status = map[i];
+          var klass = "uptime-dot";
+          if (status === "outage") klass += " uptime-dot--outage";
+          else if (status === "degraded") klass += " uptime-dot--degraded";
+          parts.push('<span class="' + klass + '" aria-hidden="true"></span>');
+        }
+        return parts.join("");
+      }
+
+      function renderIncidents(incidents) {
+        var host = document.getElementById("incidents");
+        host.innerHTML = "";
+        if (!incidents || incidents.length === 0) {
+          host.innerHTML =
+            '<p class="incidents__empty">No incidents in the last 90 days.</p>';
+          return;
+        }
+        incidents.slice(0, 5).forEach(function (inc) {
+          var last =
+            (inc.status_updates && inc.status_updates.length)
+              ? inc.status_updates[inc.status_updates.length - 1].message
+              : "";
+          var el = document.createElement("article");
+          el.className = "incident";
+          var sev = inc.severity || "minor";
+          var sevKlass = "incident__severity incident__severity--" + sev;
+          el.innerHTML =
+            '<div class="incident__head">' +
+              '<h4 class="incident__title">' + escapeHtml(inc.title || "Untitled incident") + '</h4>' +
+              '<span class="' + sevKlass + '">' + escapeHtml(sev) + '</span>' +
+            '</div>' +
+            '<div class="incident__meta">' +
+              escapeHtml(formatDate(inc.started_at)) +
+              ' &middot; Duration: ' +
+              escapeHtml(durationText(inc.started_at, inc.resolved_at)) +
+            '</div>' +
+            (last
+              ? '<p class="incident__resolution">' + escapeHtml(last) + '</p>'
+              : '');
+          host.appendChild(el);
+        });
+      }
+
+      function renderLastUpdated(iso) {
+        var el = document.getElementById("last-updated");
+        el.textContent = formatDate(iso);
+        el.setAttribute("datetime", iso || "");
+      }
+
+      function showFetchFailure() {
+        var footer = document.querySelector(".footer");
+        var note = document.createElement("span");
+        note.className = "footer__note";
+        note.textContent = "Status data unavailable — showing last known defaults.";
+        footer.appendChild(note);
+      }
+
+      function render(data) {
+        renderCurrent(data.current_status || "operational");
+        renderComponents(data.components || DEFAULT_COMPONENTS, data.incidents || []);
+        renderIncidents(data.incidents || []);
+        renderLastUpdated(data.last_updated);
+      }
+
+      // Kick it off. Cache-bust with a timestamp so the CDN doesn't hold
+      // a stale incidents file — the JSON itself is tiny.
+      render(DEFAULT_DATA);
+      fetch("./incidents.json?t=" + Date.now(), { cache: "no-store" })
+        .then(function (r) {
+          if (!r.ok) throw new Error("HTTP " + r.status);
+          return r.json();
+        })
+        .then(function (data) { render(data); })
+        .catch(function () { showFetchFailure(); });
+    })();
+  </script>
+</body>
+</html>

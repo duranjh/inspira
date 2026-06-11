@@ -1,0 +1,55 @@
+node_modules/
+dist/
+app/node_modules/
+app/dist/
+app/src-tauri/target/
+app/src-tauri/gen/
+.venv/
+local/*
+!local/README.md
+
+# Python bytecode cache
+__pycache__/
+*.pyc
+
+# Python build artifacts
+*.egg-info/
+build/
+*.egg
+
+# Python test + type-check caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Python coverage output (pytest-cov)
+services/htmlcov/
+.coverage
+.coverage.*
+
+# Local environment files (never commit real keys)
+.env
+.env.local
+
+# Playwright artifacts
+app/playwright-report/
+app/test-results/
+app/playwright/.cache/
+
+# Vitest artifacts (cache dir + future coverage runs)
+app/.vitest-cache/
+app/coverage/
+
+# TypeScript incremental build info
+*.tsbuildinfo
+
+# Editor cruft
+.vscode/
+.idea/
+.DS_Store
+**/.DS_Store
+Thumbs.db
+
+# AI assistant local state (never committed)
+.claude/
+tmp-screens/

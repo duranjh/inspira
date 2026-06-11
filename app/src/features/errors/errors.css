@@ -1,0 +1,333 @@
+/* ============================================================================
+   Inspira — error-state styles
+   ============================================================================
+
+   Four quiet screens the user might stumble into:
+
+     - NotFoundPage         full-viewport paper note, "this doesn't exist"
+     - ServerErrorPage      full-viewport paper note, "something's off"
+     - OfflineBanner        top ribbon, "you're offline"
+     - SessionExpiredModal  backdrop + centered paper card, "signed out"
+
+   These are intentionally not red "ERROR" screens. They're paper-tone
+   notes in the same warm editorial voice as the rest of Inspira. Copy
+   does the emotional work; the container just stays out of the way.
+
+   All tokens come from App.css. The lifted-paper surface is wrapped in
+   `var(--paper-lifted)` so dark mode flips the cream to warm espresso
+   without any overrides below.
+*/
+
+/* ---- Shared paper-card scaffolding ---------------------------------- */
+
+.error-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 80px 40px;
+  color: var(--ink);
+}
+
+.error-page__card {
+  max-width: 640px;
+  width: 100%;
+  display: grid;
+  gap: 24px;
+  justify-items: center;
+  text-align: center;
+  padding: 56px 48px;
+  background: var(--paper-lifted, #fbf7ee);
+  border: 1px solid var(--paper-edge);
+  border-radius: 18px;
+  box-shadow: 0 32px 64px -32px rgba(43, 37, 32, 0.18),
+    0 1px 0 rgba(43, 37, 32, 0.04);
+}
+
+.error-page__eyebrow {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+.error-page__heading {
+  font-family: var(--ff-serif);
+  font-weight: 400;
+  font-size: 48px;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.error-page__body {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 48ch;
+  margin: 0;
+}
+
+.error-page__body-echo {
+  font-family: var(--ff-mono);
+  font-style: normal;
+  font-size: 13px;
+  color: var(--ink-3);
+  background: var(--paper-3);
+  border-radius: 4px;
+  padding: 1px 6px;
+  margin: 0 2px;
+  word-break: break-all;
+}
+
+.error-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.error-page__pill {
+  font-family: var(--ff-sans);
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 11px 22px;
+  border-radius: var(--radius-btn, 999px);
+  cursor: pointer;
+  transition: transform 120ms ease, border-color 120ms ease,
+    background 120ms ease, color 120ms ease;
+}
+
+.error-page__pill--primary {
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.error-page__pill--primary:hover {
+  transform: translateY(-1px);
+}
+
+.error-page__pill--secondary {
+  border: 1px solid var(--paper-edge);
+  background: transparent;
+  color: var(--ink-2);
+}
+
+.error-page__pill--secondary:hover {
+  border-color: var(--ink-5);
+  color: var(--ink);
+}
+
+.error-page__footnote {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ink-4);
+  margin: 12px 0 0;
+}
+
+.error-page__footnote-ref {
+  color: var(--ink-3);
+}
+
+/* ---- OfflineBanner -------------------------------------------------- */
+
+.offline-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 10px 20px;
+  /* Warm gold at 24% mixed with paper — a soft amber ribbon, not an alert. */
+  background: color-mix(in srgb, var(--gold) 24%, var(--paper));
+  border-bottom: 1px solid color-mix(in srgb, var(--gold) 40%, transparent);
+  color: var(--ink);
+  box-shadow: 0 8px 20px -16px rgba(43, 37, 32, 0.22);
+  animation: offline-banner-slide-in 240ms ease-out;
+}
+
+.offline-banner__message {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--ink);
+  margin: 0;
+  max-width: 64ch;
+  text-align: center;
+}
+
+.offline-banner__dismiss {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  font-family: var(--ff-serif);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.offline-banner__dismiss:hover {
+  background: color-mix(in srgb, var(--gold) 16%, transparent);
+  color: var(--ink);
+}
+
+@keyframes offline-banner-slide-in {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* ---- SessionExpiredModal ------------------------------------------- */
+
+.session-expired {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: grid;
+  place-items: center;
+  padding: 40px 20px;
+  /* Warm-dark backdrop — ink at ~55% alpha so the paper underneath
+     still feels present, not black. */
+  background: rgba(43, 37, 32, 0.55);
+  animation: session-expired-fade-in 180ms ease-out;
+}
+
+.session-expired__card {
+  max-width: 440px;
+  width: 100%;
+  display: grid;
+  gap: 16px;
+  justify-items: center;
+  text-align: center;
+  padding: 40px 36px 32px;
+  background: var(--paper-lifted, #fbf7ee);
+  border: 1px solid var(--paper-edge);
+  border-radius: 16px;
+  box-shadow: 0 40px 80px -24px rgba(43, 37, 32, 0.45),
+    0 1px 0 rgba(43, 37, 32, 0.04);
+  animation: session-expired-rise 220ms cubic-bezier(0.2, 0, 0.2, 1);
+  outline: none;
+}
+
+.session-expired__heading {
+  font-family: var(--ff-serif);
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.session-expired__body {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 15.5px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  max-width: 42ch;
+  margin: 0;
+}
+
+.session-expired__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+@keyframes session-expired-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes session-expired-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ---- Reduced motion ------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .offline-banner,
+  .session-expired,
+  .session-expired__card {
+    animation: none;
+  }
+  .error-page__pill--primary:hover {
+    transform: none;
+  }
+}
+
+/* ---- Narrow viewports ---------------------------------------------- */
+
+@media (max-width: 640px) {
+  .error-page {
+    padding: 40px 18px;
+  }
+  .error-page__card {
+    padding: 40px 24px;
+    gap: 20px;
+    border-radius: var(--radius-card, 14px);
+  }
+  .error-page__heading {
+    font-size: 36px;
+  }
+  .error-page__body {
+    font-size: 15.5px;
+  }
+
+  .offline-banner {
+    padding: 9px 44px 9px 16px;
+    gap: 10px;
+  }
+  .offline-banner__message {
+    font-size: 13px;
+  }
+
+  .session-expired__card {
+    padding: 32px 22px 24px;
+  }
+  .session-expired__heading {
+    font-size: 30px;
+  }
+}

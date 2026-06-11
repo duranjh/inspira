@@ -1,0 +1,13 @@
+Your account is deleted, {display_name}.
+
+We have closed your Inspira account. Every project, topic, decision, and
+Q&A turn tied to it has been removed from our systems. Nothing remains
+behind a login screen.
+
+{export_block}
+
+Thank you for spending some of your thinking with us. If you want to
+come back someday, you can sign up again with the same email.
+
+Warmly,
+The Inspira team

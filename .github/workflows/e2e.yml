@@ -1,0 +1,95 @@
+name: E2E
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: e2e-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  playwright:
+    name: Playwright (chromium)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # Default every `run:` to the app/ directory so `playwright test`
+    # picks up app/playwright.config.ts. `npm --prefix app exec --` does
+    # NOT change the process cwd — only npm's package resolution — so
+    # before this default, Playwright ran from the repo root with no
+    # config, fell back to defaults (testMatch=`**/*.test.ts` from
+    # cwd), and discovered both `app/e2e/*.spec.ts` AND
+    # `app/src/**/*.test.ts`. The unit test file uses `node:test`
+    # directly, which produced the TAP-format output that confused the
+    # job, and the source files have bare JSON imports that Vite
+    # rewrites at build time but Playwright's loader can't handle —
+    # surfacing as `needs an import attribute of type "json"` on
+    # i18n/locales/de.json. Defaulting to app/ fixes both: Playwright
+    # finds its config, scoping discovery to `e2e/`, and the bare JSON
+    # imports never get touched by the test loader.
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: services/pyproject.toml
+
+      - name: Install backend (services/)
+        # Editable install brings in fastapi + uvicorn + all runtime deps
+        # the backend needs. The Playwright webServer launches
+        # `python -m planning_studio_service` from services/.
+        # Run from the repo root via working-directory override so the
+        # `./services` path resolves correctly.
+        working-directory: .
+        run: pip install -e ./services
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install frontend deps
+        run: npm ci
+
+      - name: Install Playwright browsers + system deps
+        # --with-deps installs the Chromium-required system libraries on
+        # ubuntu-latest. We only install chromium — Firefox/WebKit aren't
+        # wired in the config.
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright tests
+        env:
+          CI: "true"
+          # Dummy OpenAI key — every LLM-hitting route is mocked via
+          # page.route() in the specs, but the backend adapter still
+          # instantiates at import time, which would fail with no key.
+          OPENAI_API_KEY: "sk-test-e2e-placeholder"
+          # Zero disables the per-user daily token budget so the gate
+          # in api.py never 429s the test run.
+          INSPIRA_USER_DAILY_TOKEN_BUDGET: "0"
+          # Stable session secret so cookies don't get invalidated
+          # mid-run by a hot reload.
+          INSPIRA_SESSION_SECRET: "inspira-e2e-session-secret-not-for-prod"
+        run: npx playwright test
+
+      - name: Upload Playwright HTML report
+        # Only on failure — on success the report is noise. retention-days
+        # keeps the GH storage bill predictable.
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: app/playwright-report/
+          retention-days: 14
+          if-no-files-found: ignore

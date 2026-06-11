@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="180" viewBox="0 0 180 180">
+  <!--
+    Apple Touch Icon — 180x180 is the iOS home-screen slot. Served as
+    SVG; iOS rasterises on install. Same layout as the 192 and 512
+    PWA icons so every size reads as the same mark at a glance.
+  -->
+  <rect width="180" height="180" rx="34" fill="#F5F0E6"/>
+  <rect x="6" y="6" width="168" height="168" rx="28" fill="none" stroke="#2B2520" stroke-opacity="0.08" stroke-width="1.5"/>
+  <text x="90" y="124" text-anchor="middle" font-family="'Source Serif 4', Georgia, 'Times New Roman', serif" font-size="124" font-weight="400" fill="#2B2520" font-style="italic">I</text>
+  <circle cx="114" cy="54" r="6" fill="#568868"/>
+</svg>

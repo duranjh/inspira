@@ -1,0 +1,15 @@
+Confirm your email, {display_name}.
+
+You created an Inspira account with this address. Confirm the email
+so we know it really is yours — and so we can send you the quiet,
+useful notes that help. The link works for {expires_in_human} and
+then expires.
+
+Confirm email:
+{verify_url}
+
+Did not sign up? You can ignore this email. The account will not be
+usable until the address is confirmed.
+
+—
+Inspira

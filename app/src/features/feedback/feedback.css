@@ -1,0 +1,410 @@
+/* ============================================================================
+   Inspira — Feedback widget (C5)
+   ============================================================================
+
+   Floating sage-tinted pill anchored bottom-right on authenticated app
+   routes. Opens into a small paper card modal with a type selector,
+   message field, optional screenshot, and follow-up toggle.
+
+   Tokens come from App.css so dark mode + "modern" style flip
+   automatically.
+*/
+
+.feedback-launcher {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 80;
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--sage);
+  color: var(--paper);
+  border: 1px solid color-mix(in srgb, var(--sage) 80%, var(--ink));
+  cursor: pointer;
+  box-shadow: 0 12px 28px -12px rgba(43, 37, 32, 0.4),
+    0 2px 4px rgba(43, 37, 32, 0.06);
+  transition: transform 150ms ease, box-shadow 180ms ease;
+}
+
+.feedback-launcher:hover {
+  transform: translateY(-1px);
+}
+
+.feedback-launcher:focus-visible {
+  outline: 2px solid var(--sage);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feedback-launcher:hover {
+    transform: none;
+  }
+}
+
+/* ---- Modal ----------------------------------------------------------- */
+
+.feedback-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 40px 20px;
+  background: rgba(43, 37, 32, 0.5);
+  animation: feedback-fade-in 180ms ease-out;
+}
+
+.feedback-modal__card {
+  max-width: 520px;
+  width: 100%;
+  background: var(--paper-lifted, var(--paper));
+  border: 1px solid var(--paper-edge);
+  border-radius: 16px;
+  box-shadow: 0 40px 80px -24px rgba(43, 37, 32, 0.45);
+  animation: feedback-rise 220ms cubic-bezier(0.2, 0, 0.2, 1);
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+
+.feedback-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 22px 24px 6px;
+}
+
+.feedback-modal__title {
+  font-family: var(--ff-serif);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0;
+}
+
+.feedback-modal__subtitle {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 13.5px;
+  color: var(--ink-3);
+  margin: 4px 0 0;
+  line-height: 1.5;
+}
+
+.feedback-modal__close {
+  font-family: var(--ff-serif);
+  font-size: 24px;
+  line-height: 1;
+  border: 1px solid var(--paper-edge);
+  background: transparent;
+  color: var(--ink-3);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.feedback-modal__close:hover {
+  background: var(--paper-3);
+  color: var(--ink);
+}
+
+.feedback-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px 24px 22px;
+}
+
+.feedback-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.feedback-modal__label {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.feedback-type {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.feedback-type__pill {
+  position: relative;
+}
+
+.feedback-type__radio {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.feedback-type__label {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  color: var(--ink-2);
+  border: 1px solid var(--paper-edge);
+  border-radius: 999px;
+  cursor: pointer;
+  background: var(--paper-2);
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.feedback-type__radio:checked + .feedback-type__label {
+  border-color: var(--sage);
+  background: color-mix(in srgb, var(--sage) 12%, var(--paper));
+  color: var(--ink);
+}
+
+.feedback-type__radio:focus-visible + .feedback-type__label {
+  outline: 2px solid var(--sage);
+  outline-offset: 2px;
+}
+
+.feedback-modal__textarea {
+  font-family: var(--ff-serif);
+  font-size: 15px;
+  line-height: 1.45;
+  padding: 12px 14px;
+  border: 1px solid var(--paper-edge);
+  border-radius: 10px;
+  background: var(--paper);
+  color: var(--ink);
+  resize: vertical;
+  min-height: 120px;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.feedback-modal__textarea:focus {
+  border-color: var(--ink-5);
+  box-shadow: 0 0 0 3px rgba(43, 37, 32, 0.1);
+}
+
+:root[data-theme="dark"] .feedback-modal__textarea {
+  /* Dark-mode espresso surface matches the cream-on-paper input shade
+     already used by `.account-field__input` in account.css. */
+  background: var(--paper-lifted);
+}
+
+:root[data-style="modern"][data-theme="dark"] .feedback-modal__textarea {
+  background: var(--paper-lifted);
+}
+
+.feedback-screenshot {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feedback-screenshot__empty {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 16px;
+  border: 1px dashed var(--paper-edge);
+  background: transparent;
+  font-family: var(--ff-sans);
+  font-size: 12.5px;
+  color: var(--ink-3);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease;
+  align-self: flex-start;
+}
+
+.feedback-screenshot__empty:hover {
+  border-color: var(--ink-5);
+  color: var(--ink-2);
+}
+
+.feedback-screenshot__empty input {
+  display: none;
+}
+
+.feedback-screenshot__attached {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid var(--paper-edge);
+  background: var(--paper-2);
+  border-radius: 8px;
+  font-family: var(--ff-sans);
+  font-size: 12.5px;
+  color: var(--ink-2);
+  align-self: flex-start;
+}
+
+.feedback-screenshot__filename {
+  max-width: 280px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.feedback-screenshot__remove {
+  font-family: var(--ff-serif);
+  font-size: 18px;
+  line-height: 1;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  padding: 0 4px;
+}
+
+.feedback-screenshot__remove:hover {
+  color: var(--rust);
+}
+
+.feedback-followup {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--ff-serif);
+  font-size: 13.5px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.feedback-followup__checkbox {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--sage);
+}
+
+.feedback-modal__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+/* Dedicated styling for the feedback modal's Cancel / Send buttons so
+   they match the warm editorial palette. Previously we reused the
+   generic .account-btn / --ghost classes which rendered as a harsh
+   ink-black Cancel and a blue Send that felt out of place on the
+   cream paper card. */
+.feedback-modal__actions .account-btn,
+.feedback-modal__actions .account-btn--ghost {
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease,
+    color 140ms ease, transform 120ms ease;
+  align-self: auto;
+}
+.feedback-modal__actions .account-btn--ghost {
+  background: transparent;
+  color: var(--ink-2);
+  border: 1px solid var(--paper-edge);
+}
+.feedback-modal__actions .account-btn--ghost:hover:not(:disabled) {
+  border-color: var(--ink-4);
+  color: var(--ink);
+  background: color-mix(in srgb, var(--ink-1) 4%, transparent);
+}
+.feedback-modal__actions .account-btn:not(.account-btn--ghost) {
+  background: var(--sage);
+  color: var(--paper);
+  border: 1px solid color-mix(in srgb, var(--sage) 75%, var(--ink));
+  box-shadow: 0 8px 18px -12px rgba(43, 37, 32, 0.35),
+    0 1px 0 rgba(43, 37, 32, 0.04);
+}
+.feedback-modal__actions .account-btn:not(.account-btn--ghost):hover:not(:disabled) {
+  background: color-mix(in srgb, var(--sage) 92%, var(--ink));
+  transform: translateY(-1px);
+}
+.feedback-modal__actions .account-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.feedback-modal__error {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--rust);
+  margin: 0;
+}
+
+.feedback-modal__success {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 24px;
+  align-items: center;
+  text-align: center;
+}
+
+.feedback-modal__success-text {
+  font-family: var(--ff-serif);
+  font-size: 17px;
+  color: var(--ink);
+  margin: 0;
+}
+
+@keyframes feedback-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes feedback-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .feedback-modal,
+  .feedback-modal__card {
+    animation: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .feedback-launcher {
+    right: 16px;
+    bottom: 16px;
+    padding: 10px 16px;
+  }
+  .feedback-modal {
+    padding: 20px 12px;
+  }
+  .feedback-modal__header,
+  .feedback-modal__body {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}

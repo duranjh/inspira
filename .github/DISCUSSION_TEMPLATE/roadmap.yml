@@ -1,0 +1,54 @@
+title: "[roadmap] "
+labels: ["roadmap"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        This is the place for bigger ideas — directional suggestions that are more about where Inspira should go than a single bug or small feature. We read every one, and the best ones shape what we build next.
+
+  - type: input
+    id: headline
+    attributes:
+      label: One-line pitch
+      description: If we only read this line, what's the idea?
+      placeholder: "Let people invite collaborators to a shared canvas"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem or opportunity
+      description: What's happening today that this would change? Who feels it, and when?
+      placeholder: "Today, sharing a canvas means exporting..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: shape
+    attributes:
+      label: What might this look like
+      description: A rough sketch of the experience. Don't worry about being right — broad strokes are fine, and often more useful than precise ones.
+      placeholder: "Maybe there's a share button in the top bar that..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: horizon
+    attributes:
+      label: How soon do you think this matters?
+      options:
+        - Nice-to-have someday
+        - Would unblock me in the next few months
+        - Would change how I use Inspira today
+    validations:
+      required: false
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Prior art, related discussions, or references
+      description: Links to similar features in other tools, earlier threads, or research that informs this.
+      placeholder: "Optional."
+    validations:
+      required: false

@@ -1,0 +1,432 @@
+/* AI Status chip + Orchestrator panel — lifted from the internal v12
+   hi-fi (design files not included in this repo). Every selector is
+   prefixed with `.ai-status` so the os-* classes can't leak. Tokens
+   come from App.css :root (--sage, --gold-wash, --ff-serif, etc.) so
+   the chip re-themes automatically with the rest of the app.
+
+   Z-index registry — see App.css preamble for the full list. The panel
+   sits at 110 (above topic-detail drawer 100, below modal 10000). */
+
+/* Wrapper — positions the panel relative to the chip. */
+.ai-status {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--ff-serif);
+}
+
+/* ── Chip ── */
+.ai-status .os-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: var(--r-pill);
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 12px;
+  cursor: pointer;
+  position: relative;
+  transition: box-shadow 120ms ease;
+}
+.ai-status .os-chip::before {
+  content: "";
+  position: absolute;
+  inset: -0.5px;
+  border-radius: var(--r-pill);
+  border: 1px dashed var(--ink-5);
+  opacity: 0.25;
+  pointer-events: none;
+}
+.ai-status .os-chip:hover {
+  box-shadow: var(--shadow-card);
+}
+.ai-status .os-chip:focus-visible {
+  outline: 2px solid var(--sage);
+  outline-offset: 2px;
+}
+
+.ai-status .os-chip--idle {
+  background: var(--bg-raised);
+  color: var(--sage-ink);
+  border: 1px solid var(--sage);
+}
+.ai-status .os-chip--running {
+  background: var(--gold-wash);
+  color: var(--gold-ink);
+  border: 1px solid var(--gold);
+}
+.ai-status .os-chip--failed {
+  background: var(--bg-raised);
+  color: var(--rust-ink);
+  border: 1px solid var(--rust);
+}
+.ai-status .os-chip--conflict {
+  background: var(--bg-raised);
+  color: var(--gold-ink);
+  border: 1px solid var(--gold);
+}
+
+.ai-status .os-chip__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ai-status .os-chip__dot--sage {
+  background: var(--sage);
+}
+.ai-status .os-chip__dot--gold {
+  background: var(--gold);
+  animation: aiStatusPulse 1.4s ease infinite;
+}
+.ai-status .os-chip__dot--rust {
+  background: var(--rust);
+}
+@keyframes aiStatusPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.ai-status .os-chip__warn {
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+/* ── Re-run button ── */
+.ai-status .os-rerun {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 12px;
+  border-radius: var(--r-pill);
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid var(--sage);
+  background: transparent;
+  color: var(--sage-ink);
+  cursor: pointer;
+}
+.ai-status .os-rerun:hover {
+  background: var(--sage-wash);
+}
+.ai-status .os-rerun:focus-visible {
+  outline: 2px solid var(--sage);
+  outline-offset: 2px;
+}
+.ai-status .os-rerun:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* ── Orchestrator panel ── */
+.ai-status .os-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 110;
+  width: 520px;
+  background: var(--bg-raised);
+  border: 1px solid var(--sage);
+  border-radius: var(--r-4);
+  box-shadow: var(--shadow-float);
+  overflow: hidden;
+}
+/* Rail context — AIStatus lives at the bottom of a sticky left rail,
+   so the panel opens UPWARD and to the RIGHT (toward page content)
+   instead of falling off the viewport bottom. Mirrors the
+   .user-menu--rail pattern. */
+.app-rail__ai .ai-status .os-panel {
+  top: auto;
+  bottom: calc(100% + 8px);
+  right: auto;
+  left: 0;
+}
+
+.ai-status .os-panel__hd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px 10px;
+  border-bottom: 1px dashed var(--border-soft);
+}
+.ai-status .os-panel__title {
+  font-family: var(--ff-serif);
+  font-size: 17px;
+  font-weight: 400;
+  flex: 1;
+  margin: 0;
+}
+.ai-status .os-panel__close {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+  font-size: 16px;
+  border-radius: 4px;
+}
+.ai-status .os-panel__close:hover {
+  background: var(--rule-soft, var(--border-soft));
+  color: var(--fg);
+}
+.ai-status .os-panel__close:focus-visible {
+  outline: 2px solid var(--sage);
+  outline-offset: 1px;
+}
+.ai-status .os-panel__subtitle {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--fg-muted);
+  padding: 0 16px 10px;
+}
+
+/* Conflict banner */
+.ai-status .os-conflict-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: var(--gold-wash);
+  border-bottom: 1px solid var(--gold);
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--gold-ink);
+}
+.ai-status .os-conflict-row__link {
+  color: var(--gold-ink);
+  font-weight: 500;
+  cursor: pointer;
+  margin-left: auto;
+  text-decoration: none;
+  font-family: var(--ff-sans);
+  font-style: normal;
+  font-size: 11px;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.ai-status .os-conflict-row__link:hover {
+  text-decoration: underline;
+}
+
+/* Sub-agent cards */
+.ai-status .os-agents {
+  padding: 8px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ai-status .os-agent {
+  padding: 10px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-3);
+  transition: opacity 200ms ease;
+}
+.ai-status .os-agent.done {
+  opacity: 0.5;
+}
+.ai-status .os-agent__top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+.ai-status .os-agent__name {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--fg);
+  flex: 1;
+}
+.ai-status .os-agent__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: var(--r-pill);
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  letter-spacing: 0.04em;
+}
+.ai-status .os-agent__status--working {
+  background: var(--sage-wash);
+  color: var(--sage-ink);
+}
+.ai-status .os-agent__status--working .os-agent__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--sage);
+  animation: aiStatusPulse 1.4s ease infinite;
+}
+.ai-status .os-agent__status--conflict {
+  background: var(--gold-wash);
+  color: var(--gold-ink);
+}
+.ai-status .os-agent__status--failed {
+  background: var(--rust-wash);
+  color: var(--rust-ink);
+}
+.ai-status .os-agent__status--done {
+  background: var(--sage-wash);
+  color: var(--sage-ink);
+}
+.ai-status .os-agent__activity {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 11.5px;
+  color: var(--fg-muted);
+  line-height: 1.45;
+}
+.ai-status .os-agent__view {
+  font-family: var(--ff-sans);
+  font-size: 10px;
+  color: var(--fg-muted);
+  cursor: pointer;
+  margin-top: 4px;
+  display: inline-block;
+  text-decoration: none;
+  background: none;
+  border: none;
+  padding: 0;
+}
+.ai-status .os-agent__view:hover {
+  color: var(--fg);
+  text-decoration: underline;
+}
+
+/* Configure expander */
+.ai-status .os-config {
+  border-top: 1px dashed var(--border-soft);
+  padding: 10px 16px;
+}
+.ai-status .os-config__trigger {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--fg-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  width: 100%;
+  text-align: left;
+}
+.ai-status .os-config__trigger:hover {
+  color: var(--fg);
+}
+.ai-status .os-config__trigger:focus-visible {
+  outline: 2px solid var(--sage);
+  outline-offset: 2px;
+}
+.ai-status .os-config__body {
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ai-status .os-config__toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+}
+.ai-status .os-config__switch {
+  width: 32px;
+  height: 18px;
+  border-radius: 9px;
+  position: relative;
+  transition: background 120ms;
+  flex-shrink: 0;
+}
+.ai-status .os-config__switch--on {
+  background: var(--sage);
+}
+.ai-status .os-config__switch--off {
+  background: var(--ink-5);
+}
+.ai-status .os-config__switch::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: white;
+  top: 2px;
+  transition: left 120ms;
+}
+.ai-status .os-config__switch--on::after {
+  left: 16px;
+}
+.ai-status .os-config__switch--off::after {
+  left: 2px;
+}
+.ai-status .os-config__label {
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  color: var(--fg);
+}
+
+/* Idle panel body */
+.ai-status .os-idle {
+  padding: 20px 16px;
+  text-align: center;
+}
+.ai-status .os-idle__text {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--fg-muted);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+.ai-status .os-idle__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  border-radius: var(--r-2);
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  font-weight: 500;
+  background: var(--sage);
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+.ai-status .os-idle__cta:hover {
+  opacity: 0.9;
+}
+.ai-status .os-idle__cta:focus-visible {
+  outline: 2px solid var(--sage);
+  outline-offset: 2px;
+}
+
+/* Narrow-viewport panel — keeps the 520px design but anchors with margin
+   so we don't clip against the brand on small widths. */
+@media (max-width: 720px) {
+  .ai-status .os-panel {
+    width: calc(100vw - 32px);
+    right: 16px;
+  }
+}

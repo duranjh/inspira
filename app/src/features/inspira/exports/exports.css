@@ -1,0 +1,372 @@
+/* Send-to-Linear / Send-to-GitHub modal styling.
+ *
+ * Class names ported verbatim from the internal v12 hi-fi (design
+ * files not included in this repo) so the visual diff between
+ * design and implementation stays grep-able. Tokens reference the
+ * existing app variables (--paper, --ink, --paper-edge, etc.) with
+ * neutral fallbacks so the modals still render in the absence of a
+ * theme override.
+ */
+
+.exports__attribution {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 11.5px;
+  color: var(--ink-3, #6f6258);
+  margin: 0 0 12px;
+}
+
+.exports__state {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-size: 13px;
+  color: var(--ink-3, #6f6258);
+  padding: 16px;
+  border: 1px dashed var(--paper-edge, #dbcfb6);
+  border-radius: 8px;
+  text-align: center;
+}
+
+.exports__state--error {
+  color: var(--rust-ink, #8a3a18);
+  border-color: var(--rust, #b3471d);
+  background: rgba(179, 71, 29, 0.06);
+}
+
+.exports__error {
+  font-family: var(--ff-sans, sans-serif);
+  font-size: 12.5px;
+  color: var(--rust-ink, #8a3a18);
+  background: var(--rust-wash, #f5dccd);
+  border: 1px solid var(--rust, #b3471d);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.exports__edit-note {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: -4px;
+}
+
+.exports__edit {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--gold, #c89d3b);
+  color: var(--gold-ink, #8a6a1a);
+  font-family: var(--ff-sans, sans-serif);
+  font-size: 12px;
+  padding: 5px 11px;
+  border-radius: 6px;
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.exports__edit:hover {
+  background: var(--gold-wash, #f1e4c2);
+}
+
+.exports__visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---- Card block ----------------------------------------------------- */
+
+.ex-card {
+  background: var(--paper, #fbf7ee);
+  border: 1px solid var(--paper-edge, #dbcfb6);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.ex-card__label {
+  font-family: var(--ff-mono, ui-monospace, monospace);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-4, #968873);
+  margin-bottom: 8px;
+}
+
+/* ---- Destination ---------------------------------------------------- */
+
+.ex-dest {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ex-dest__logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: var(--sage-wash, #d8e0c5);
+  color: var(--sage-ink, #4a6135);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ff-sans, sans-serif);
+  font-size: 12px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.ex-dest__info {
+  flex: 1;
+  min-width: 0;
+}
+
+.ex-dest__name {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink, #2b2520);
+}
+
+.ex-dest__path {
+  font-family: var(--ff-mono, ui-monospace, monospace);
+  font-size: 10.5px;
+  color: var(--ink-3, #6f6258);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ex-dest__change {
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--paper-edge, #dbcfb6);
+  border-radius: 6px;
+  font-family: var(--ff-sans, sans-serif);
+  font-size: 11px;
+  color: var(--ink-3, #6f6258);
+  padding: 4px 10px;
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+/* ---- Issue preview -------------------------------------------------- */
+
+.ex-preview {
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.ex-preview__title {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--ink, #2b2520);
+  margin-bottom: 8px;
+  line-height: 1.3;
+}
+
+.ex-preview__section {
+  margin-bottom: 10px;
+}
+
+.ex-preview__section-hd {
+  font-family: var(--ff-mono, ui-monospace, monospace);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-4, #968873);
+  margin-bottom: 4px;
+}
+
+.ex-preview__text {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-size: 12.5px;
+  color: var(--ink, #2b2520);
+  line-height: 1.6;
+}
+
+.ex-preview__bullet {
+  font-family: var(--ff-sans, sans-serif);
+  font-size: 12px;
+  color: var(--ink, #2b2520);
+  line-height: 1.5;
+  padding-left: 12px;
+  position: relative;
+  margin-bottom: 3px;
+}
+
+.ex-preview__bullet::before {
+  content: "–";
+  position: absolute;
+  left: 0;
+  color: var(--ink-4, #968873);
+  font-family: var(--ff-mono, ui-monospace, monospace);
+}
+
+.ex-preview__more {
+  font-family: var(--ff-mono, ui-monospace, monospace);
+  font-size: 10px;
+  color: var(--ink-4, #968873);
+  padding-left: 12px;
+  margin-top: 2px;
+}
+
+.ex-preview__chips {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.ex-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-family: var(--ff-mono, ui-monospace, monospace);
+  font-size: 9px;
+}
+
+.ex-chip--gold {
+  background: var(--gold-wash, #f1e4c2);
+  color: var(--gold-ink, #8a6a1a);
+}
+
+.ex-chip--sage {
+  background: var(--sage-wash, #d8e0c5);
+  color: var(--sage-ink, #4a6135);
+}
+
+.ex-chip--rust {
+  background: var(--rust-wash, #f5dccd);
+  color: var(--rust-ink, #8a3a18);
+}
+
+.ex-preview__link {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--sage-ink, #4a6135);
+  margin-top: 4px;
+  display: block;
+}
+
+/* ---- Sub-issues / Tasks --------------------------------------------- */
+
+.ex-sub {
+  margin-top: 10px;
+}
+
+.ex-sub__hd {
+  font-family: var(--ff-mono, ui-monospace, monospace);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-4, #968873);
+  margin-bottom: 4px;
+}
+
+.ex-sub__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 4px 0;
+  font-family: var(--ff-sans, sans-serif);
+  font-size: 12px;
+  color: var(--ink, #2b2520);
+  line-height: 1.4;
+}
+
+.ex-sub__item + .ex-sub__item {
+  border-top: 1px dashed var(--paper-edge, #dbcfb6);
+}
+
+.ex-sub__check {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  border: 1.5px solid var(--paper-edge, #dbcfb6);
+  background: var(--paper, #fbf7ee);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.ex-sub__topic {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-weight: 500;
+}
+
+/* ---- Options -------------------------------------------------------- */
+
+.ex-opt {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.ex-opt + .ex-opt {
+  border-top: 1px dashed var(--paper-edge, #dbcfb6);
+}
+
+.ex-opt__check {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1.5px solid var(--sage, #7a8c5a);
+  background: var(--paper, #fbf7ee);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  color: var(--sage, #7a8c5a);
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.ex-opt__check.checked {
+  background: var(--sage, #7a8c5a);
+  color: white;
+}
+
+.ex-opt__text {
+  font-family: var(--ff-sans, sans-serif);
+  font-size: 12.5px;
+  color: var(--ink, #2b2520);
+  line-height: 1.5;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ex-opt__hint {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--ink-3, #6f6258);
+}
+
+.ex-opt__dropdown {
+  margin-top: 4px;
+  appearance: none;
+  font-family: var(--ff-sans, sans-serif);
+  font-size: 11px;
+  color: var(--ink, #2b2520);
+  border: 1px solid var(--paper-edge, #dbcfb6);
+  border-radius: 6px;
+  padding: 4px 8px;
+  background: var(--paper, #fbf7ee);
+  align-self: flex-start;
+}
+
+.ex-opt__dropdown:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}

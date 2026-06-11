@@ -1,0 +1,159 @@
+/* ProjectStateBadge — editorial state pill (B3.3 §1).
+ *
+ * Ports the markup from the internal v12 hi-fi (design files not
+ * included in this repo) `.smb` styles to a stable component-scoped
+ * prefix (`psb-`). Both consumers
+ * (Kanban card row + canvas right-rail) share this CSS;
+ * never inline a one-off pill or fork the per-state colors.
+ *
+ * Color mapping (state -> visual treatment):
+ *   pending_review  | sage outline + sage-ink text + dashed dotted bg
+ *   in_review       | gold solid fill + ink text
+ *   approved        | rust solid fill + white text
+ *   rejected        | ink-wash + ink-3 text + soft border
+ *   summary_ready   | gradient sage-wash -> bg-raised + sage-ink text
+ *                     (forward-compat; the orchestrator drives it post-W4)
+ */
+
+.psb {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: var(--r-pill);
+  font-family: var(--ff-serif);
+  font-style: italic;
+  white-space: nowrap;
+  position: relative;
+  /* The dashed dotted outline overlay is a ::before so the badge body
+   * keeps its solid border for hit-testing. Per-state rules dial the
+   * overlay opacity down to zero on solid-fill states.
+   */
+}
+
+.psb::before {
+  content: "";
+  position: absolute;
+  inset: -0.5px;
+  border-radius: var(--r-pill);
+  border: 1px dashed var(--ink-5);
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+/* ── Sizes ──────────────────────────────────────────────────── */
+
+.psb--compact {
+  padding: 2px 7px;
+  font-size: 9px;
+  gap: 3px;
+}
+.psb--compact .psb__icon {
+  font-size: 8px;
+}
+
+.psb--default {
+  padding: 4px 11px;
+  font-size: 11.5px;
+}
+.psb--default .psb__icon {
+  font-size: 11px;
+}
+
+.psb--large {
+  padding: 6px 14px;
+  font-size: 12.5px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+.psb--large .psb__row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.psb__future-tag {
+  font-family: var(--ff-mono);
+  font-size: 8px;
+  font-style: normal;
+  opacity: 0.6;
+  margin-left: 4px;
+}
+
+.psb__attribution {
+  font-family: var(--ff-serif);
+  font-size: 10px;
+  color: var(--fg-muted);
+  font-style: italic;
+  opacity: 0.8;
+}
+
+/* Hide-but-announce: tells screen readers the full label even when
+ * the visual badge shows just the abbreviation. */
+.psb__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── Per-state palettes ─────────────────────────────────────── */
+
+.psb--pending-review {
+  background: var(--bg-raised);
+  color: var(--sage-ink);
+  border: 1px solid var(--sage);
+}
+.psb--pending-review::before {
+  border-color: var(--sage);
+  opacity: 0.2;
+}
+.psb--pending-review .psb__icon {
+  color: var(--sage);
+}
+
+.psb--in-review {
+  background: var(--gold);
+  color: var(--ink);
+  border: 1px solid var(--gold);
+}
+.psb--in-review::before {
+  opacity: 0;
+}
+
+.psb--approved {
+  background: var(--rust);
+  color: white;
+  border: 1px solid var(--rust);
+}
+.psb--approved::before {
+  opacity: 0;
+}
+
+.psb--rejected {
+  background: var(--ink-wash);
+  color: var(--ink-3);
+  border: 1px solid var(--border, var(--border-soft));
+}
+.psb--rejected::before {
+  opacity: 0;
+}
+
+.psb--summary-ready {
+  background: linear-gradient(
+    135deg,
+    var(--bg-raised),
+    var(--sage-wash)
+  );
+  color: var(--sage-ink);
+  border: 1px solid var(--sage);
+}
+.psb--summary-ready::before {
+  border-color: var(--sage);
+  opacity: 0.15;
+}
