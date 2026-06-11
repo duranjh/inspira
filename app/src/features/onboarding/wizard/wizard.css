@@ -1,0 +1,580 @@
+/* Inspira — v4 Onboarding Wizard.
+ *
+ * Mirrors docs/product/design/v5-pivot/Inspira v5 Pivot (12)/Onboarding
+ * Wizard.html. Dotted-grid scoped to .ob-screen only — never on body
+ * (per feedback_dotted_grid_canvas_only).
+ */
+
+.ob-screen {
+  min-height: 100dvh;
+  background: var(--paper, #f5f0e6);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  color: var(--ink, #2b2520);
+  font-family: var(--ff-sans, "Geist", system-ui, sans-serif);
+}
+
+/* ── Top chrome ── */
+.ob-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 28px;
+}
+
+.ob-wordmark {
+  font-family: var(--ff-serif, "Source Serif 4", Georgia, serif);
+  font-style: italic;
+  font-size: 18px;
+  letter-spacing: -0.01em;
+  color: var(--ink, #2b2520);
+}
+
+.ob-skip {
+  font-size: 12px;
+  color: var(--ink-3, #7a6f64);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ob-skip:hover {
+  color: var(--ink, #2b2520);
+}
+
+/* ── Center content ── */
+.ob-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0 32px 60px;
+  max-width: 640px;
+  margin: 0 auto;
+  width: 100%;
+  text-align: center;
+}
+
+.ob-center--wide {
+  max-width: 760px;
+}
+
+.ob-headline {
+  font-family: var(--ff-serif, "Source Serif 4", Georgia, serif);
+  font-weight: 400;
+  font-size: 32px;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  margin: 0 0 8px;
+  color: var(--ink, #2b2520);
+}
+
+.ob-subtitle {
+  font-family: var(--ff-serif, "Source Serif 4", Georgia, serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-3, #7a6f64);
+  margin: 0 0 28px;
+  max-width: 48ch;
+  line-height: 1.5;
+}
+
+/* ── Step 1 input ── */
+.ob-input-wrap {
+  width: 100%;
+  max-width: 420px;
+  margin-bottom: 10px;
+}
+
+.ob-input {
+  width: 100%;
+  padding: 14px 18px;
+  font-family: var(--ff-serif, "Source Serif 4", Georgia, serif);
+  font-size: 20px;
+  color: var(--ink, #2b2520);
+  background: var(--paper-lifted, #ece4d3);
+  border: 1px solid var(--paper-edge, #dbcfb6);
+  border-radius: 12px;
+  outline: none;
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+  box-sizing: border-box;
+}
+
+.ob-input::placeholder {
+  color: var(--ink-4, #8b7f70);
+  font-style: italic;
+}
+
+.ob-input:focus {
+  border-color: var(--sage, #6a9a7a);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sage, #6a9a7a) 18%, transparent);
+}
+
+.ob-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ob-slug {
+  font-family: var(--ff-serif, "Source Serif 4", Georgia, serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-3, #7a6f64);
+  margin-top: 8px;
+  min-height: 20px;
+}
+
+/* ── Primary CTA ── */
+.ob-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  background: var(--sage, #6a9a7a);
+  color: white;
+  border: none;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: opacity 120ms ease;
+  min-height: 44px;
+}
+
+.ob-cta:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.ob-cta:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ob-cta:focus-visible {
+  outline: 2px solid var(--focus-ring, rgba(43, 37, 32, 0.35));
+  outline-offset: 2px;
+}
+
+.ob-ghost {
+  font-size: 12px;
+  color: var(--ink-3, #7a6f64);
+  margin-top: 12px;
+  line-height: 1.5;
+}
+
+/* Inline error block (Step 1 + steps with retry hints). */
+.ob-inline-error {
+  margin-top: 12px;
+  padding: 8px 14px;
+  background: color-mix(in srgb, var(--rust, #b06a4d) 10%, var(--paper, #f5f0e6));
+  border: 1px solid color-mix(in srgb, var(--rust, #b06a4d) 35%, transparent);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--rust-ink, #8a4f38);
+  font-family: var(--ff-serif, "Source Serif 4", Georgia, serif);
+  font-style: italic;
+}
+
+/* ── Connector tiles (Step 2 + Step 3) ── */
+.ob-tiles {
+  display: flex;
+  gap: 14px;
+  width: 100%;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.ob-tile {
+  flex: 1;
+  min-width: 240px;
+  background: var(--paper-lifted, #ece4d3);
+  border: 1px solid var(--sage, #6a9a7a);
+  border-radius: 14px;
+  padding: 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  text-align: left;
+  transition: box-shadow 160ms ease;
+}
+
+.ob-tile:hover {
+  box-shadow: 0 4px 14px rgba(43, 37, 32, 0.06);
+}
+
+.ob-tile--single {
+  max-width: 400px;
+}
+
+.ob-tile--dropzone {
+  border-style: dashed;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  min-height: 120px;
+}
+
+.ob-tile--dragover {
+  background: color-mix(in srgb, var(--sage, #6a9a7a) 12%, var(--paper-lifted, #ece4d3));
+  border-color: var(--sage, #6a9a7a);
+}
+
+.ob-tile__logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--sage, #6a9a7a) 12%, transparent);
+  color: var(--sage-ink, #4a7a5a);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.ob-tile__name {
+  font-family: var(--ff-serif, "Source Serif 4", Georgia, serif);
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.ob-tile__desc {
+  font-size: 12.5px;
+  color: var(--ink-3, #7a6f64);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.ob-tile__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  background: var(--sage, #6a9a7a);
+  color: white;
+  align-self: flex-start;
+}
+
+.ob-tile__cta:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.ob-tile__cta:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.ob-tile__cta--secondary {
+  background: transparent;
+  color: var(--sage-ink, #4a7a5a);
+  border: 1px solid var(--sage, #6a9a7a);
+}
+
+.ob-tile__oauth {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--ff-serif, "Source Serif 4", Georgia, serif);
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--gold-ink, #8a6a3a);
+}
+
+.ob-tile__spinner {
+  width: 14px;
+  height: 14px;
+  border: 2px solid color-mix(in srgb, var(--gold, #d4a050) 30%, transparent);
+  border-top-color: var(--gold, #d4a050);
+  border-radius: 50%;
+  animation: obSpin 0.8s linear infinite;
+}
+
+.ob-tile__progress {
+  font-size: 12px;
+  color: var(--ink-3, #7a6f64);
+  font-family: var(--ff-serif, "Source Serif 4", Georgia, serif);
+  font-style: italic;
+}
+
+.ob-tile__form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.ob-tile__form input {
+  padding: 9px 12px;
+  font-family: var(--ff-mono, monospace);
+  font-size: 12.5px;
+  background: var(--paper, #f5f0e6);
+  border: 1px solid var(--paper-edge, #dbcfb6);
+  border-radius: 8px;
+  outline: none;
+}
+
+.ob-tile__form input:focus {
+  border-color: var(--sage, #6a9a7a);
+}
+
+.ob-tile__form-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.ob-tile__error {
+  font-size: 12px;
+  color: var(--rust-ink, #8a4f38);
+  font-style: italic;
+  font-family: var(--ff-serif, "Source Serif 4", Georgia, serif);
+}
+
+.ob-tile__check {
+  color: var(--sage-ink, #4a7a5a);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+@keyframes obSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ob-tile__spinner {
+    animation: none;
+  }
+}
+
+.ob-above-tiles {
+  font-family: var(--ff-serif, "Source Serif 4", Georgia, serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--ink-3, #7a6f64);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+.ob-below-tiles {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.ob-below-tiles a {
+  font-size: 12px;
+  color: var(--ink-3, #7a6f64);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ob-below-tiles a:hover {
+  color: var(--ink, #2b2520);
+  text-decoration: underline;
+}
+
+/* ── Step 4: clustering animation ── */
+.ob-anim {
+  width: 420px;
+  max-width: 100%;
+  height: 220px;
+  position: relative;
+  border-radius: 14px;
+  border: 1px solid var(--paper-edge, #dbcfb6);
+  background: var(--paper, #f5f0e6);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.ob-anim__card {
+  position: absolute;
+  width: 100px;
+  height: 52px;
+  background: var(--paper-lifted, #ece4d3);
+  border: 1px solid var(--paper-edge, #dbcfb6);
+  border-radius: 6px;
+  padding: 6px 8px;
+  box-shadow: 0 2px 6px rgba(43, 37, 32, 0.06);
+  animation: cardDraw 2s ease infinite;
+}
+
+.ob-anim__card-title {
+  font-family: var(--ff-serif, "Source Serif 4", Georgia, serif);
+  font-size: 9px;
+  font-weight: 500;
+  color: var(--ink, #2b2520);
+  margin-bottom: 3px;
+}
+
+.ob-anim__card-line {
+  height: 3px;
+  border-radius: 1px;
+  background: var(--ink-4, #8b7f70);
+  margin-bottom: 2px;
+}
+
+@keyframes cardDraw {
+  0% {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  20% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.6;
+  }
+}
+
+.ob-anim__line line {
+  stroke: var(--ink-4, #8b7f70);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+  animation: lineDraw 2s ease infinite;
+}
+
+@keyframes lineDraw {
+  0% {
+    stroke-dashoffset: 20;
+    opacity: 0;
+  }
+  30% {
+    opacity: 0.5;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.5;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ob-anim__card {
+    animation: none;
+    opacity: 1;
+  }
+  .ob-anim__line line {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+.ob-status-feed {
+  text-align: left;
+  max-width: 420px;
+  width: 100%;
+}
+
+.ob-status-line {
+  font-family: var(--ff-serif, "Source Serif 4", Georgia, serif);
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--ink-3, #7a6f64);
+  line-height: 1.8;
+  animation: feedFadeIn 400ms ease forwards;
+  opacity: 0;
+}
+
+@keyframes feedFadeIn {
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ob-status-line {
+    animation: none;
+    opacity: 1;
+  }
+}
+
+/* ── Bottom chrome ── */
+.ob-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 28px 56px;
+}
+
+.ob-back {
+  font-size: 12px;
+  color: var(--ink-3, #7a6f64);
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.ob-back:hover {
+  color: var(--ink, #2b2520);
+}
+
+.ob-dots {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 20px;
+}
+
+.ob-dots__row {
+  display: flex;
+  gap: 6px;
+}
+
+.ob-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--ink-4, #8b7f70);
+  transition: background 200ms ease;
+}
+
+.ob-dot--active {
+  background: var(--sage, #6a9a7a);
+}
+
+.ob-dots__label {
+  font-family: var(--ff-serif, "Source Serif 4", Georgia, serif);
+  font-style: italic;
+  font-size: 11px;
+  color: var(--ink-3, #7a6f64);
+}
+
+@media (max-width: 768px) {
+  .ob-tiles {
+    flex-direction: column;
+  }
+  .ob-anim {
+    width: 280px;
+    height: 200px;
+  }
+}
+
+@media (max-width: 520px) {
+  .ob-center {
+    padding: 0 16px 60px;
+  }
+  .ob-headline {
+    font-size: 24px;
+  }
+  .ob-input {
+    font-size: 17px;
+  }
+}

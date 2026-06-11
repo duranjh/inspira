@@ -1,0 +1,35 @@
+# Generated from Sitemap Routing/v2/spec.md § 4.
+# Same file ships in staging and production — staging is gated at the
+# DNS/HTTP-auth layer, so this Disallow list is moot there.
+# Do NOT hand-edit — regenerate from the spec.
+
+User-agent: *
+
+# App shell + API — auth-gated, never indexable
+Disallow: /app/
+Disallow: /api/
+
+# Auth routes — noindex per Meta Tags spec
+Disallow: /login
+Disallow: /signup
+Disallow: /verify-email
+Disallow: /forgot-password
+Disallow: /reset-password
+Disallow: /signin/new-device
+
+# Token-gated transactional routes
+Disallow: /unsubscribe
+Disallow: /manage-billing
+Disallow: /session/revoke
+Disallow: /account/restore
+
+# System pages
+Disallow: /maintenance
+Disallow: /404
+Disallow: /500
+
+# Canonical-equivalent query-string duplicates
+Disallow: /*?utm_*
+Disallow: /*?ref=
+
+Sitemap: https://tryinspira.com/sitemap.xml

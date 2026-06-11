@@ -1,0 +1,258 @@
+name: CI
+
+# Pre-merge gate. Every PR and every push to main runs:
+#   - Backend: pytest (services/)
+#   - Frontend: typecheck + unit tests + production build + smoke test
+#   - Migrations: SQLite → Postgres parity + reversibility
+#   - Docker: both images build from clean cache
+#
+# Why this list exists: prior incidents (apr 2026) showed the old CI did not
+# catch (a) breaking major Vite bumps because dependabot auto-merged without
+# exercising the full toolchain, and (b) prod bundle crashes like React error
+# #300 that pass `npm run build` but blow up on render. The smoke job below
+# boots the built bundle with `vite preview` and asserts the landing page
+# renders without throwing — cheapest possible guard against ship-then-crash.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  legal-placeholders:
+    name: Legal placeholder guard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check docs/legal/*.md for LAWYER CHECK markers
+        # Fails the build if any LAWYER CHECK / LAWYER / OPS CHECK
+        # marker leaks into a rendered legal document. Internal tracker
+        # at docs/legal/TODO.md is the only legitimate home.
+        run: bash scripts/check_legal_placeholders.sh
+
+  backend:
+    name: Backend (pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: services/pyproject.toml
+
+      - name: Install service package
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run pytest
+        # Quiet (-q) so failures stand out; keeps CI logs skimmable.
+        # `unittest` remains compatible since pytest collects unittest.TestCase
+        # subclasses automatically.
+        run: pytest -q tests
+
+  frontend:
+    name: Frontend (typecheck + test + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        # Project settled on npm after the pnpm-lock drift that stalled a
+        # Cloudflare Pages build for 4 hours. Do NOT reintroduce pnpm here
+        # without deleting app/package-lock.json first.
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        # `npm ci` fails fast when package-lock.json is out of sync with
+        # package.json — exactly what we want from a dependabot PR that
+        # touches package.json but not the lockfile.
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Unit tests
+        # vitest run (not watch). The `test` script in app/package.json
+        # already resolves to `vitest run`.
+        run: npm test
+
+      - name: Build
+        # Production bundle. Catches peer-dep breakers from dependabot
+        # (e.g. the @vitejs/plugin-react v6 ↔ vite v8 mismatch that reached
+        # main twice and broke the CF Pages build).
+        run: npm run build
+
+  frontend-smoke:
+    name: Frontend (preview smoke)
+    runs-on: ubuntu-latest
+    # Depend on frontend so we reuse its gating — no point smoking a
+    # bundle that failed to build. The smoke job re-runs `npm run build`
+    # because GHA jobs don't share filesystems; caching the build output
+    # would add complexity for a <60s build.
+    needs: frontend
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright (chromium)
+        # --with-deps pulls the Chromium system libraries on ubuntu-latest.
+        # We only need chromium for the smoke spec; Firefox/WebKit aren't
+        # wired into playwright.config.ts.
+        run: npx playwright install --with-deps chromium
+
+      - name: Build
+        run: npm run build
+
+      - name: Run smoke spec against `vite preview`
+        # The smoke spec boots `npm run preview` via its own webServer
+        # block, loads /, and asserts zero console errors + an ErrorBoundary
+        # fallback never renders. This is the shield against the React
+        # error #300 class of bug: local dev passes but the minified
+        # production bundle crashes on a specific render path.
+        run: npx playwright test --config playwright.smoke.config.ts
+
+      - name: Upload smoke report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-report
+          path: app/playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore
+
+  migrations-postgres:
+    name: Migrations (Postgres)
+    runs-on: ubuntu-latest
+    # Spin up a throwaway Postgres alongside the job so we can verify the
+    # alembic baseline applies cleanly against Postgres — not just SQLite —
+    # and that downgrade/upgrade is reversible. No repo secrets required:
+    # the credentials below are scoped to this in-CI instance only.
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: inspira_ci
+          POSTGRES_PASSWORD: ci_pass
+          POSTGRES_DB: inspira_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: services/pyproject.toml
+
+      - name: Install backend deps
+        # Editable install brings in alembic + psycopg + sqlalchemy pinned
+        # in services/pyproject.toml. No [dev] extras needed for this job —
+        # we only exercise alembic, not pytest.
+        run: pip install -e ./services
+
+      - name: Run migrations forward (SQLite → Postgres parity)
+        env:
+          DATABASE_URL: postgresql+psycopg://inspira_ci:ci_pass@localhost:5432/inspira_ci
+        run: alembic -c services/alembic.ini upgrade head
+
+      - name: Reversibility smoke — downgrade base, upgrade head
+        # Exercises every downgrade path. If a future migration forgets to
+        # implement downgrade(), or leaves the schema in a state that can't
+        # be re-upgraded, this step catches it before it hits prod.
+        env:
+          DATABASE_URL: postgresql+psycopg://inspira_ci:ci_pass@localhost:5432/inspira_ci
+        run: |
+          alembic -c services/alembic.ini downgrade base
+          alembic -c services/alembic.ini upgrade head
+
+      - name: Verify check_migrations.py detects drift
+        # After downgrade base → upgrade head the DB is at head. Run the
+        # pre-deploy drift guard against it to confirm the script exits 0
+        # when DB matches code. This also protects the script from
+        # bitrotting in lockstep with alembic version bumps.
+        env:
+          DATABASE_URL: postgresql+psycopg://inspira_ci:ci_pass@localhost:5432/inspira_ci
+        run: python services/scripts/check_migrations.py
+
+  docker:
+    name: Docker (build images)
+    runs-on: ubuntu-latest
+    needs:
+      - backend
+      - frontend
+      - migrations-postgres
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./services
+          file: ./services/Dockerfile
+          push: false
+          tags: inspira-backend:ci
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v5
+        with:
+          # Context is the repo root (not ./app) so the build can reach
+          # ../docs/legal/*.md — LegalPage.tsx imports those via Vite's
+          # ?raw suffix.
+          context: .
+          file: ./app/Dockerfile
+          push: false
+          tags: inspira-frontend:ci
+          build-args: |
+            VITE_INSPIRA_API_URL=http://localhost:4174
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,scope=frontend,mode=max

@@ -1,0 +1,60 @@
+# Keep Docker build contexts small and secret-free.
+# This file applies to both services/ and app/ builds (Docker's .dockerignore
+# lookup walks up from the build context dir to the repo root).
+
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Secrets / local env
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.venv
+venv
+.pytest_cache
+.mypy_cache
+.ruff_cache
+.tox
+*.egg-info
+
+# Node / Vite
+node_modules
+dist
+.vite
+.turbo
+.cache
+
+# Tauri (desktop wrapper — not part of either server image)
+app/src-tauri/target
+app/src-tauri/gen
+
+# Local runtime state — never ship DB/transcripts into the image
+local/data
+local/*.sqlite
+local/*.sqlite-journal
+
+# Editor / OS noise
+.idea
+.vscode
+.DS_Store
+Thumbs.db
+
+# Large / irrelevant content
+docs
+# …but keep the legal markdown sources — the frontend bundle imports
+# them via Vite's ?raw suffix from src/features/marketing/LegalPage.tsx.
+!docs/legal
+templates
+# NOTE: do NOT blanket-ignore `scripts` — `services/scripts/` is admin
+# tooling we ship in the backend image (run via `fly ssh console`).
+# If you need to ignore a top-level scripts dir, scope it explicitly,
+# e.g. `/scripts` or a path under app/.
+*.log

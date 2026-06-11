@@ -1,0 +1,20 @@
+A new device signed in, {display_name}.
+
+Someone signed into your Inspira account from a device we have not
+seen before.
+
+Device: {device_label}
+Location: {location_label}
+When: {signed_in_at_human}
+
+If that was you, no action is needed.
+
+If that was not you, turn on two-factor authentication and reset your
+password right away.
+
+Turn on two-factor:
+{two_factor_link}
+
+—
+We only send this note the first time a device signs in. Subsequent
+sign-ins from the same device stay quiet.

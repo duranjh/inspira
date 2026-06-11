@@ -1,0 +1,1779 @@
+/* W2 ι — Artifact Viewer
+ *
+ * All av-* classes are scoped to this feature. We deliberately keep
+ * them out of App.css to avoid extending that 5500-line stylesheet
+ * further. Tokens (--paper, --sage, --gold, --rust, --ink-3, etc.)
+ * come from App.css's :root block.
+ *
+ * Per `feedback_dotted_grid_canvas_only.md`, the dotted grid only
+ * applies to .av-code__grid (the editor pane), never body or surrounding
+ * chrome.
+ */
+
+.av-shell {
+  display: flex;
+  flex-direction: column;
+  /* Span the full viewport. `.app-shell__main` parent is a grid
+     with `56px 1fr` rows — without `grid-row: 1 / -1`, `.av-shell`
+     would auto-place in row 1 (56px) and collapse. The 100vh
+     guarantees full-height regardless of grid-row placement. */
+  grid-row: 1 / -1;
+  height: 100vh;
+  height: 100dvh;
+  max-height: 100vh;
+  max-height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+  background: var(--paper);
+  color: var(--ink-2);
+  font-family: var(--ff-sans);
+}
+
+/* ---- Top bar ---------------------------------------------------------- */
+
+.av-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 48px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--paper-edge);
+  background: var(--paper);
+  flex-shrink: 0;
+}
+
+.av-top__back {
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: background 100ms;
+}
+.av-top__back:hover {
+  background: var(--paper-2);
+  color: var(--ink-2);
+}
+
+.av-top__title-wrap {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  overflow: hidden;
+}
+
+.av-top__title {
+  margin: 0;
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 15px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.av-badge {
+  flex-shrink: 0;
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.av-badge--approved {
+  background: var(--rust);
+  color: #fff;
+}
+
+.av-badge--drafting {
+  background: var(--paper-3);
+  color: var(--ink-3);
+}
+
+.av-top__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.av-top__btn {
+  border: 1px solid transparent;
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 120ms, background 100ms;
+}
+
+.av-top__btn--primary {
+  background: var(--sage);
+  color: #fff;
+}
+.av-top__btn--primary:hover {
+  opacity: 0.9;
+}
+
+.av-top__btn--ghost {
+  background: transparent;
+  color: var(--sage);
+  border-color: var(--sage);
+}
+.av-top__btn--ghost:hover {
+  background: rgba(67, 112, 82, 0.08);
+}
+
+.av-top__kebab-wrap {
+  position: relative;
+}
+
+.av-top__kebab {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+.av-top__kebab:hover {
+  background: var(--paper-2);
+}
+
+.av-top__menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--paper-lifted);
+  border: 1px solid var(--paper-edge);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(43, 37, 32, 0.08);
+  z-index: 10;
+  min-width: 160px;
+}
+
+.av-top__menu-item {
+  display: block;
+  width: 100%;
+  padding: 6px 10px;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  color: var(--ink-2);
+  cursor: pointer;
+  border-radius: 4px;
+}
+.av-top__menu-item:hover {
+  background: var(--paper-2);
+}
+
+/* ---- Three-panel grid ------------------------------------------------- */
+
+.av-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 240px 1fr 360px;
+  min-height: 0;
+}
+
+/* ---- Left: file tree -------------------------------------------------- */
+
+.av-nav {
+  border-right: 1px dashed var(--paper-edge);
+  overflow-y: auto;
+  background: color-mix(in srgb, var(--paper) 92%, var(--paper-3) 8%);
+}
+
+.av-nav__list {
+  list-style: none;
+  margin: 0;
+  padding: 12px 0;
+}
+
+.av-nav__dir {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  font-style: italic;
+  padding: 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.av-nav__chevron {
+  font-size: 9px;
+  color: var(--ink-4, var(--ink-3));
+}
+
+.av-nav__file {
+  margin: 0;
+}
+
+/* Per-row 3-dot menu — hidden by default, fades in when the row is
+   hovered or the menu is open. Replaces the always-visible ✎/✕
+   buttons that cluttered the file tree (founder feedback 2026-05-04). */
+.av-row-menu {
+  opacity: 0;
+  transition: opacity 120ms;
+  pointer-events: none;
+}
+.av-nav__file:hover .av-row-menu,
+.av-nav__file:focus-within .av-row-menu,
+.av-row-menu--open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Hide the line-count chip while the menu is visible — they share
+   the right edge and otherwise overlap (founder report 2026-05-04). */
+.av-nav__file:hover .av-nav__lines,
+.av-nav__file:focus-within .av-nav__lines {
+  visibility: hidden;
+}
+.av-row-menu--open ~ .av-nav__file-btn .av-nav__lines {
+  visibility: hidden;
+}
+
+.av-nav__file-btn {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+  color: var(--ink-2);
+  padding: 4px 14px 4px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 100ms;
+}
+.av-nav__file-btn:hover {
+  background: var(--paper-2);
+}
+
+.av-nav__file--active .av-nav__file-btn {
+  background: rgba(67, 112, 82, 0.12);
+  color: var(--ink-2);
+}
+
+.av-nav__file-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.av-nav__lines {
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  color: var(--ink-3);
+  flex-shrink: 0;
+}
+
+.av-chip {
+  font-family: var(--ff-mono);
+  font-size: 8.5px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.av-chip--mod {
+  background: rgba(135, 101, 32, 0.15);
+  color: var(--gold);
+}
+.av-chip--new {
+  background: rgba(67, 112, 82, 0.15);
+  color: var(--sage);
+}
+.av-chip--diff_ready {
+  background: var(--gold);
+  color: #fff;
+}
+.av-chip--thinking {
+  background: rgba(135, 101, 32, 0.15);
+  color: var(--gold);
+  animation: av-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes av-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.4;
+  }
+}
+
+/* ---- Center: code editor --------------------------------------------- */
+
+.av-artifact {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px dashed var(--paper-edge);
+}
+
+.av-artifact__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 36px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--paper-edge);
+  flex-shrink: 0;
+}
+
+.av-artifact__tabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  flex: 1;
+  min-width: 0;
+}
+
+.av-artifact__tab {
+  border: none;
+  background: transparent;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  padding: 8px 8px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: color 120ms;
+}
+.av-artifact__tab:hover {
+  color: var(--ink-2);
+}
+.av-artifact__tab--active {
+  color: var(--ink-2);
+  border-bottom-color: var(--sage);
+}
+
+.av-mode {
+  display: inline-flex;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--paper-2);
+  flex-shrink: 0;
+}
+
+.av-mode__btn {
+  border: none;
+  background: transparent;
+  font-family: var(--ff-sans);
+  font-size: 11px;
+  padding: 4px 12px;
+  color: var(--ink-3);
+  cursor: pointer;
+  transition: background 120ms, color 120ms;
+}
+.av-mode__btn--active {
+  background: var(--sage);
+  color: #fff;
+}
+
+.av-code {
+  flex: 1;
+  overflow: hidden;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Read-only pane (SyntaxHighlighter wrapper). The pre inside has its
+   own `overflow: auto` from the editorial theme, but it only kicks
+   in when the pre has a bounded height. Pinning the pane to the
+   container height + overflow:auto here gives the user vertical AND
+   horizontal scroll on long files (founder report 2026-05-04: read-
+   only mode wouldn't scroll). */
+.av-code__pane {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.av-code__pane > pre {
+  height: 100%;
+}
+
+/* Monaco editor wrapper. The Monaco React component manages its
+   own internal layout; we just give it a flexed cell to fill. */
+.av-code__monaco {
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.av-code__grid {
+}
+
+.av-code__preview-empty {
+  padding: 24px;
+  font-family: var(--ff-serif);
+  font-style: italic;
+  color: var(--ink-3);
+  text-align: center;
+}
+
+/* ---- Right: chat sidebar --------------------------------------------- */
+
+.av-chat {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  /* Defensive height bound — without this the chat cell could
+     collapse to its content size in certain layout transitions
+     (file-tree row clicks, CodeMirror first-mount), pushing the
+     composer below the fold (founder report 2026-05-04). */
+  height: 100%;
+  min-height: 0;
+  background: color-mix(in srgb, var(--paper) 92%, var(--paper-3) 8%);
+}
+
+.av-chat__hd {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px;
+  border-bottom: 1px solid var(--paper-edge);
+  flex-shrink: 0;
+}
+
+.av-chat__avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(67, 112, 82, 0.18);
+  color: var(--sage);
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.av-chat__title {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-2);
+  flex: 1;
+}
+
+.av-chat__status {
+  font-family: var(--ff-mono);
+  font-size: 9.5px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgba(43, 37, 32, 0.06);
+  color: var(--ink-3);
+}
+
+.av-chat__status--thinking {
+  background: rgba(135, 101, 32, 0.15);
+  color: var(--gold);
+  animation: av-pulse 1.4s ease-in-out infinite;
+}
+
+.av-chat__feed {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  min-height: 0;
+}
+
+.av-chat__msg {
+  max-width: 85%;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.av-chat__msg--ai {
+  align-self: flex-start;
+  background: var(--paper-lifted);
+  border: 1px solid var(--paper-edge);
+  font-family: var(--ff-serif);
+  font-style: italic;
+  color: var(--ink-2);
+}
+
+.av-chat__msg--user {
+  align-self: flex-end;
+  background: var(--paper-3);
+  font-family: var(--ff-sans);
+  color: var(--ink-2);
+  line-height: 1.5;
+}
+
+.av-chat__msg--typing {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.av-chat__inline-code {
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+  font-style: normal;
+  background: rgba(43, 37, 32, 0.06);
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+.av-chat__typing {
+  display: inline-flex;
+  gap: 4px;
+}
+.av-chat__typing span {
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--sage);
+  opacity: 0.3;
+  animation: av-typing 1.2s ease-in-out infinite;
+}
+.av-chat__typing span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.av-chat__typing span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes av-typing {
+  0%, 60%, 100% {
+    opacity: 0.3;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+.av-chat__thinking-label {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.av-chat__composer {
+  display: flex;
+  gap: 8px;
+  padding: 10px 14px;
+  border-top: 1px solid var(--paper-edge);
+  flex-shrink: 0;
+  /* Belt-and-suspenders: pin to the bottom of the chat panel
+     so flex calculations can never push it off-screen. */
+  position: sticky;
+  bottom: 0;
+  background: inherit;
+  z-index: 1;
+}
+
+.av-chat__input {
+  flex: 1;
+  border: 1px solid var(--paper-edge);
+  background: var(--paper-lifted);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-family: var(--ff-serif);
+  font-size: 13px;
+  color: var(--ink-2);
+  resize: vertical;
+  min-height: 36px;
+  max-height: 120px;
+  outline: none;
+}
+.av-chat__input:focus {
+  border-color: var(--sage);
+}
+.av-chat__input::placeholder {
+  font-style: italic;
+  color: var(--ink-3);
+}
+.av-chat__input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.av-chat__send {
+  border: none;
+  background: var(--sage);
+  color: #fff;
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+  transition: opacity 120ms;
+}
+.av-chat__send:hover {
+  opacity: 0.9;
+}
+.av-chat__send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ---- Empty / loading / error states ---------------------------------- */
+
+.av-empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 40px;
+}
+
+.av-empty__pulse {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(67, 112, 82, 0.2);
+  animation: av-pulse 1.4s ease-in-out infinite;
+}
+
+.av-empty__line {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-3);
+  text-align: center;
+}
+
+.av-empty__line--error {
+  color: var(--rust);
+}
+
+/* ============================================================
+ * PR-verification banner (rendered below ArtifactTopBar after
+ * Send-to-GitHub fires; polls /pr-verification every 8s).
+ * ============================================================ */
+.av-pr-verify {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 18px;
+  border-bottom: 1px solid var(--paper-edge);
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  background: var(--paper-lifted, #fbf7ee);
+  color: var(--ink-2);
+  flex-shrink: 0;
+}
+.av-pr-verify--passed {
+  background: color-mix(in srgb, var(--sage) 12%, var(--paper-lifted));
+  color: var(--sage-ink, var(--ink-2));
+}
+.av-pr-verify--failed {
+  background: color-mix(in srgb, var(--rust) 12%, var(--paper-lifted));
+  color: var(--rust);
+}
+.av-pr-verify--pending {
+  background: color-mix(in srgb, var(--gold) 10%, var(--paper-lifted));
+}
+.av-pr-verify__icon {
+  font-family: var(--ff-mono);
+  font-size: 14px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.av-pr-verify--pending .av-pr-verify__icon {
+  animation: av-pr-spin 2s linear infinite;
+}
+@keyframes av-pr-spin {
+  from { transform: rotate(0); }
+  to { transform: rotate(360deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .av-pr-verify--pending .av-pr-verify__icon { animation: none; }
+}
+.av-pr-verify__text { flex: 1; }
+.av-pr-verify__summary {
+  color: var(--ink-3);
+  font-style: italic;
+}
+.av-pr-verify__link {
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  color: inherit;
+  text-decoration: underline;
+  flex-shrink: 0;
+}
+.av-pr-verify__dismiss {
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  color: var(--ink-3);
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.av-pr-verify__dismiss:hover { color: var(--ink); }
+
+/* ============================================================
+ * Approval chip — top-bar slot replacing the canvas Review panel.
+ * ============================================================ */
+.av-top__approval {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+/* Skeleton placeholder shown until the project_state fetch resolves;
+   prevents the ApprovalChip from flashing "DRAFT · Request review"
+   for in-review/approved projects on first paint. */
+.av-chip-skeleton {
+  display: inline-block;
+  width: 132px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--ink-7, #f4f0e6);
+  animation: av-chip-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes av-chip-shimmer {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 0.85; }
+}
+.approval-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--paper-lifted, #fbf7ee);
+  border: 1px solid var(--paper-edge);
+  font-family: var(--ff-sans);
+  font-size: 12.5px;
+  color: var(--ink-2);
+}
+.approval-chip__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-family: var(--ff-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+.approval-chip__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.approval-chip__badge--draft {
+  background: var(--paper-2, #efe8d8);
+  color: var(--ink-3);
+}
+.approval-chip__badge--in_review {
+  background: color-mix(in srgb, var(--gold) 14%, transparent);
+  color: var(--gold);
+}
+.approval-chip__badge--approved {
+  background: color-mix(in srgb, var(--sage) 14%, transparent);
+  color: var(--sage);
+}
+.approval-chip__btn {
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-family: var(--ff-sans);
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+  white-space: nowrap;
+}
+.approval-chip__btn--primary {
+  background: var(--sage);
+  color: var(--paper);
+  border: 1px solid var(--sage);
+}
+.approval-chip__btn--primary:hover {
+  background: var(--sage-ink, var(--sage));
+  border-color: var(--sage-ink, var(--sage));
+}
+.approval-chip__btn--ghost {
+  background: transparent;
+  color: var(--ink-2);
+  border: 1px solid var(--paper-edge);
+}
+.approval-chip__btn--ghost:hover {
+  border-color: var(--ink-5);
+  color: var(--ink);
+}
+.approval-chip__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+.approval-chip__error {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--rust);
+  max-width: 200px;
+}
+
+/* ---- Wave F.2: left-rail tabs + repo file explorer ------------------- */
+
+.av-left-rail {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border-right: 1px dashed var(--paper-edge);
+  background: color-mix(in srgb, var(--paper) 92%, var(--paper-3) 8%);
+}
+/* When the rail wraps the nav, the inner nav's own border-right would
+   double-up against the rail's. Strip it on the inner nav. */
+.av-left-rail .av-nav {
+  border-right: none;
+  background: transparent;
+  flex: 1;
+  min-height: 0;
+}
+
+.av-rail-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--paper-edge);
+  flex-shrink: 0;
+  background: var(--paper);
+}
+.av-rail-tabs__btn {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  color: var(--ink-3);
+  padding: 5px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 120ms, color 120ms;
+}
+.av-rail-tabs__btn:hover {
+  color: var(--ink-2);
+  background: var(--paper-2);
+}
+.av-rail-tabs__btn--active {
+  color: var(--ink);
+  background: var(--paper-2);
+  font-weight: 600;
+}
+
+/* Breadcrumb slot in the artifact bar — replaces the file-tabs row
+   when CodeEditor renders a single read-only repo file. */
+.av-artifact__breadcrumb {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+  color: var(--ink-2);
+  padding: 8px 4px;
+}
+
+/* Repo tree styles. Mirrors .av-nav__file-btn density so toggling
+   between Scaffold and Repo doesn't shift the rail's vibe. */
+.av-nav--repo {
+  padding: 4px 0;
+  overflow-y: auto;
+}
+
+.av-repo-tree {
+  display: flex;
+  flex-direction: column;
+}
+
+.av-repo-tree__dir {
+  /* `details` defaults — keep them, just style the marker */
+}
+.av-repo-tree__dir > summary {
+  list-style: none;
+  cursor: pointer;
+}
+.av-repo-tree__dir > summary::-webkit-details-marker {
+  display: none;
+}
+.av-repo-tree__dir-summary {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  font-style: italic;
+  padding: 4px 14px 4px 0;
+}
+.av-repo-tree__dir-chevron {
+  font-size: 9px;
+  display: inline-block;
+  transition: transform 120ms;
+}
+.av-repo-tree__dir[open] > summary .av-repo-tree__dir-chevron {
+  transform: rotate(90deg);
+}
+
+.av-repo-tree__file {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: left;
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+  color: var(--ink-2);
+  padding: 4px 14px 4px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 100ms;
+}
+.av-repo-tree__file:hover {
+  background: var(--paper-2);
+}
+.av-repo-tree__file--active {
+  background: rgba(67, 112, 82, 0.12);
+}
+.av-repo-tree__file-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.av-repo-tree__file-spinner {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  color: var(--ink-3);
+  flex-shrink: 0;
+  display: inline-block;
+  animation: av-pulse 1s ease-in-out infinite;
+}
+
+/* Wave F.3 — "modified" badge for scaffold/modified-source rows in
+ * the PRs/ overlay tree. Visually distinct from the rest of the row
+ * so reviewers can scan diff intent without expanding folders. Uses
+ * the same sage palette as the active-file highlight to read as
+ * "Inspira touched this." */
+.av-repo-tree__badge {
+  font-family: var(--ff-sans);
+  font-size: 9.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.av-repo-tree__badge--modified {
+  color: var(--sage);
+  background: rgba(67, 112, 82, 0.14);
+  border: 1px solid rgba(67, 112, 82, 0.28);
+}
+
+/* Wave F.5 — "behind main" pill on a PR folder row when the project's
+ * recorded base_main_sha has diverged from the current default-branch
+ * head AND at least one changed file intersects the scaffold. Rust
+ * palette reads as "needs attention" without the alarm of red. */
+.av-repo-tree__badge--behind-main {
+  color: var(--rust-ink);
+  background: var(--rust-wash);
+  border: 1px solid var(--rust-ink);
+  opacity: 0.85;
+}
+
+/* Wave F.5 — subtle chevron-down on file rows whose path appears in the
+ * staleness ``affected_paths_sample``. Tiny visual hint that this
+ * specific file is affected by the drift; the banner does the heavier
+ * narrative work. */
+.av-repo-tree__chevron-affected {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  color: var(--rust-ink);
+  font-size: 10px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+/* Wave F.5 — "Edit" toggle that replaces the implicit-edit affordance
+ * on stale scaffold files. Renders in the CodeEditor top bar with a
+ * one-line "Stale — review before editing" subtitle so the partner
+ * sees the friction signal BEFORE typing. Sage outline + subtle hover
+ * — deliberate but not alarming. */
+.av-artifact__edit-stale {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 4px 10px;
+  margin-right: 12px;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--sage);
+  border: 1px solid var(--sage);
+  cursor: pointer;
+  font-family: var(--ff-sans);
+  line-height: 1.1;
+}
+.av-artifact__edit-stale:hover {
+  background: rgba(67, 112, 82, 0.06);
+}
+.av-artifact__edit-stale-label {
+  font-size: 12px;
+  font-weight: 500;
+}
+.av-artifact__edit-stale-hint {
+  font-size: 9.5px;
+  font-style: italic;
+  color: var(--rust-ink);
+  letter-spacing: 0.01em;
+}
+
+/* Truncated tree banner (>100k entries — GitHub silently truncates) */
+.av-repo-truncated {
+  font-family: var(--ff-serif);
+  font-size: 11.5px;
+  font-style: italic;
+  color: var(--ink-2);
+  background: rgba(135, 101, 32, 0.10);
+  border-bottom: 1px solid var(--paper-edge);
+  padding: 8px 12px;
+}
+
+/* Wave F.5 — top-of-PR-folder staleness banner. Rust palette mirrors
+ * the "behind main" pill; the CTA pair sits inline on the right so
+ * the layout works in the narrow Repo-tab column. */
+.av-staleness-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+  padding: 10px 14px;
+  margin: 8px 8px 4px 8px;
+  border-radius: 6px;
+  background: var(--rust-wash);
+  border: 1px solid var(--rust-ink);
+  color: var(--rust-ink);
+}
+.av-staleness-banner__body {
+  flex: 1 1 220px;
+  margin: 0;
+  font-family: var(--ff-serif);
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+.av-staleness-banner__body strong {
+  font-weight: 600;
+}
+.av-staleness-banner__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.av-staleness-banner__cta {
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--sage);
+  border: 1px solid var(--sage);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.av-staleness-banner__dismiss {
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--rust-ink);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.av-staleness-banner__dismiss:hover {
+  border-color: var(--rust-ink);
+  opacity: 0.85;
+}
+
+/* Empty state — partner hasn't connected GitHub yet (409). */
+.av-repo-empty {
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+.av-repo-empty__line {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  margin: 0;
+  line-height: 1.45;
+}
+.av-repo-empty__cta {
+  display: inline-block;
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  color: #fff;
+  background: var(--sage);
+  border-radius: 4px;
+  padding: 6px 12px;
+  text-decoration: none;
+  transition: opacity 120ms;
+}
+.av-repo-empty__cta:hover {
+  opacity: 0.88;
+}
+
+/* Error state — generic load failure (network, 5xx). */
+.av-repo-error {
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+.av-repo-error__line {
+  font-family: var(--ff-serif);
+  font-size: 12.5px;
+  color: var(--rust);
+  margin: 0;
+  line-height: 1.45;
+  word-break: break-word;
+}
+.av-repo-error__retry {
+  font-family: var(--ff-sans);
+  font-size: 11.5px;
+  color: var(--ink-2);
+  background: var(--paper-2);
+  border: 1px solid var(--paper-edge);
+  border-radius: 4px;
+  padding: 4px 12px;
+  cursor: pointer;
+}
+
+/* Loading skeleton — 5 shimmering rows that match file-row density. */
+.av-repo-tree__skeleton {
+  list-style: none;
+  margin: 0;
+  padding: 12px 0;
+}
+.av-repo-tree__skeleton-row {
+  height: 12px;
+  margin: 6px 14px;
+  border-radius: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--paper-2) 0%,
+    var(--paper-3) 50%,
+    var(--paper-2) 100%
+  );
+  background-size: 200% 100%;
+  animation: av-repo-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes av-repo-skeleton-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+/* ---- Wave F.4: inline IDE-style comment chips on generated code ----- */
+
+/* Overlay sibling to <CodeMirrorEditor>. Sits over the gutter column,
+ * doesn't intercept clicks on the code area (chips are individually
+ * pointer-events: auto). The whole thing scrolls with the editor
+ * because chip Y offsets come from view.coordsAtPos which already
+ * accounts for scrollTop. */
+.av-comment-gutter {
+  position: absolute;
+  inset: 0 auto 0 0;
+  /* Wide enough to host the popover + thread lozenge without
+   * clipping; sits in front of the .cm-gutters column. */
+  width: 360px;
+  pointer-events: none;
+  z-index: 4;
+}
+.av-comment-gutter * {
+  pointer-events: auto;
+}
+
+.av-comment-chip {
+  position: absolute;
+  left: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  border: 1px solid var(--sage);
+  background: transparent;
+  transform: translateY(2px);
+  transition: background 120ms, opacity 120ms;
+}
+.av-comment-chip--saved {
+  border-color: var(--gold);
+  background: var(--gold);
+}
+.av-comment-chip--saved .av-comment-chip__dot {
+  background: var(--paper);
+}
+.av-comment-chip--resolved {
+  border-color: var(--gold);
+  background: transparent;
+}
+.av-comment-chip--resolved .av-comment-chip__dot {
+  background: var(--gold);
+}
+.av-comment-chip--stale {
+  border-color: var(--rust);
+  background: transparent;
+}
+.av-comment-chip--stale .av-comment-chip__dot {
+  background: var(--rust);
+}
+.av-comment-chip--ghost {
+  opacity: 0;
+  animation: av-comment-chip-fade-in 150ms ease-out forwards;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  line-height: 1;
+  color: var(--sage);
+  cursor: pointer;
+}
+@keyframes av-comment-chip-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+.av-comment-chip__btn {
+  all: unset;
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.av-comment-chip__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--sage);
+  display: block;
+}
+
+/* Inline thread lozenge anchored to a saved chip. */
+.av-comment-thread {
+  position: absolute;
+  left: 24px;
+  top: 0;
+  width: 280px;
+  padding: 10px 12px;
+  border: 1px solid var(--paper-edge);
+  border-radius: 8px;
+  background: var(--paper-lifted, #fbf6e8);
+  box-shadow: 0 4px 14px rgba(40, 30, 10, 0.06);
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  color: var(--ink-2);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.av-comment-thread__meta {
+  display: flex;
+  gap: 8px;
+  font-size: 10.5px;
+  color: var(--ink-3);
+  font-family: var(--ff-mono);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.av-comment-thread__category {
+  color: var(--sage);
+}
+.av-comment-thread__time {
+  color: var(--ink-3);
+}
+.av-comment-thread__text {
+  margin: 0;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+.av-comment-thread__reply {
+  border-top: 1px dashed var(--paper-edge);
+  padding-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.av-comment-thread__reply-input {
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  padding: 6px 8px;
+  border: 1px solid var(--paper-edge);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink-2);
+  resize: vertical;
+}
+.av-comment-thread__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.av-comment-thread__resolve,
+.av-comment-thread__send,
+.av-comment-thread__reopen {
+  font-family: var(--ff-sans);
+  font-size: 11.5px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--paper-edge);
+  background: var(--paper);
+  color: var(--ink-3);
+}
+.av-comment-thread__send {
+  background: var(--sage);
+  color: var(--paper);
+  border-color: var(--sage);
+}
+.av-comment-thread__send:disabled,
+.av-comment-thread__resolve:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.av-comment-thread__resolved-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 11.5px;
+  color: var(--ink-3);
+}
+.av-comment-thread__error {
+  margin: 0;
+  font-size: 11px;
+  color: var(--rust);
+}
+
+/* Popover for adding a new comment. */
+.av-comment-popover {
+  position: absolute;
+  left: 24px;
+  top: 0;
+  width: 280px;
+  padding: 10px 12px;
+  border: 1px solid var(--paper-edge);
+  border-radius: 8px;
+  background: var(--paper-lifted, #fbf6e8);
+  box-shadow: 0 4px 14px rgba(40, 30, 10, 0.08);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.av-comment-popover__input {
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  padding: 6px 8px;
+  border: 1px solid var(--paper-edge);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink-2);
+  resize: vertical;
+}
+.av-comment-popover__categories {
+  border: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.av-comment-popover__legend {
+  font-family: var(--ff-mono);
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-3);
+  margin-bottom: 4px;
+  width: 100%;
+}
+.av-comment-popover__radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11.5px;
+  color: var(--ink-2);
+}
+.av-comment-popover__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+.av-comment-popover__cancel,
+.av-comment-popover__save {
+  font-family: var(--ff-sans);
+  font-size: 11.5px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--paper-edge);
+  background: var(--paper);
+  color: var(--ink-3);
+}
+.av-comment-popover__save {
+  background: var(--sage);
+  color: var(--paper);
+  border-color: var(--sage);
+}
+.av-comment-popover__save:disabled,
+.av-comment-popover__cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.av-comment-popover__error {
+  margin: 0;
+  font-size: 11px;
+  color: var(--rust);
+}
+
+/* File-tree dot indicator for files with unresolved threads. */
+.av-nav__comment-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--gold);
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+/* ---- Wave F.6: Refresh PR with Inspira ---------------------------- */
+
+.av-refresh-modal__loading,
+.av-refresh-modal__error,
+.av-refresh-modal__empty,
+.av-refresh-modal__diff-empty {
+  margin: 0;
+  padding: 24px 12px;
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  color: var(--ink-3);
+  text-align: center;
+}
+
+.av-refresh-modal__error {
+  color: var(--rust);
+}
+
+.av-refresh-modal__header {
+  margin: 0 0 12px;
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  color: var(--ink-2);
+  line-height: 1.55;
+}
+
+.av-refresh-modal__bulk {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.av-refresh-modal__bulk-btn {
+  font-family: var(--ff-sans);
+  font-size: 11.5px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--paper-edge);
+  background: var(--paper);
+  color: var(--ink-3);
+}
+
+.av-refresh-modal__bulk-btn:hover {
+  background: var(--paper-edge);
+}
+
+.av-refresh-modal__body {
+  display: grid;
+  grid-template-columns: minmax(220px, 30%) 1fr;
+  gap: 12px;
+  height: 60vh;
+  min-height: 360px;
+}
+
+.av-refresh-modal__filelist {
+  border: 1px solid var(--paper-edge);
+  border-radius: 4px;
+  overflow-y: auto;
+  background: var(--paper);
+}
+
+.av-refresh-modal__filelist ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.av-refresh-modal__file-row {
+  border-bottom: 1px solid var(--paper-edge);
+}
+
+.av-refresh-modal__file-row.is-active {
+  background: var(--sage-bg, #eef3ee);
+}
+
+.av-refresh-modal__file-btn {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-2);
+}
+
+.av-refresh-modal__file-btn:hover {
+  background: var(--paper-edge);
+}
+
+.av-refresh-modal__file-path {
+  flex: 1;
+  min-width: 0;
+  word-break: break-all;
+}
+
+.av-refresh-modal__file-chip {
+  font-family: var(--ff-sans);
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
+  border-radius: 3px;
+  border: 1px solid var(--paper-edge);
+  color: var(--ink-3);
+  background: var(--paper);
+  white-space: nowrap;
+}
+
+.av-refresh-modal__file-chip--ai {
+  border-color: var(--sage);
+  color: var(--sage);
+}
+
+.av-refresh-modal__file-chip--you {
+  border-color: var(--gold, #b88a00);
+  color: var(--gold, #b88a00);
+}
+
+.av-refresh-modal__file-chip--conflict {
+  border-color: var(--rust);
+  color: var(--rust);
+}
+
+.av-refresh-modal__file-decision {
+  font-family: var(--ff-sans);
+  font-size: 9.5px;
+  color: var(--ink-3);
+  margin-left: auto;
+}
+
+.av-refresh-modal__file-decision--keep_partner_edit {
+  color: var(--gold, #b88a00);
+}
+
+.av-refresh-modal__file-decision--merged {
+  color: var(--ink-2);
+}
+
+.av-refresh-modal__diff {
+  border: 1px solid var(--paper-edge);
+  border-radius: 4px;
+  background: var(--paper);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.av-refresh-diff {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.av-refresh-diff__decisions {
+  display: flex;
+  gap: 14px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--paper-edge);
+  font-family: var(--ff-sans);
+  font-size: 11.5px;
+  color: var(--ink-2);
+  flex-wrap: wrap;
+}
+
+.av-refresh-diff__decisions label {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.av-refresh-diff__decision--hidden {
+  visibility: hidden;
+}
+
+.av-refresh-diff__panes {
+  display: grid;
+  gap: 0;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.av-refresh-diff__panes--two {
+  grid-template-columns: 1fr 1fr;
+}
+
+.av-refresh-diff__panes--three {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.av-refresh-diff__pane {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-right: 1px solid var(--paper-edge);
+  overflow: hidden;
+}
+
+.av-refresh-diff__pane:last-child {
+  border-right: none;
+}
+
+.av-refresh-diff__pane-title {
+  margin: 0;
+  padding: 6px 10px;
+  font-family: var(--ff-sans);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-3);
+  background: var(--paper-edge);
+  border-bottom: 1px solid var(--paper-edge);
+}
+
+.av-refresh-diff__pane-body {
+  margin: 0;
+  padding: 8px 0;
+  overflow: auto;
+  flex: 1;
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+  line-height: 1.45;
+  background: var(--paper);
+  color: var(--ink-2);
+}
+
+.av-refresh-diff__line {
+  display: block;
+  padding: 0 10px;
+  white-space: pre-wrap;
+}
+
+.av-refresh-diff__line--added {
+  background: rgba(80, 140, 80, 0.12);
+  color: #2c5c2c;
+}
+
+.av-refresh-diff__line--removed {
+  background: rgba(190, 60, 60, 0.10);
+  color: #7a2a2a;
+}
+
+.av-refresh-diff__line--unchanged {
+  color: var(--ink-3);
+}
+
+.av-refresh-diff__merged-textarea {
+  margin: 8px 12px 12px;
+  padding: 8px 10px;
+  font-family: var(--ff-mono);
+  font-size: 11.5px;
+  border: 1px solid var(--paper-edge);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink-2);
+  min-height: 120px;
+  resize: vertical;
+}
+
+@media (max-width: 720px) {
+  .av-refresh-modal__body {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .av-refresh-diff__panes--two,
+  .av-refresh-diff__panes--three {
+    grid-template-columns: 1fr;
+  }
+  .av-refresh-diff__pane {
+    border-right: none;
+    border-bottom: 1px solid var(--paper-edge);
+  }
+}

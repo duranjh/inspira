@@ -1,0 +1,128 @@
+/* ============================================================================
+   Inspira — /email-confirm quiet-center page.
+   Reuses tokens from App.css (--paper, --ink-*, --sage, --paper-edge, etc.).
+   No hex literals — every color reads through a variable.
+   ========================================================================== */
+
+.email-confirm-page {
+  min-height: 100dvh;
+  background: var(--paper);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+}
+
+.email-confirm-page__card {
+  max-width: 520px;
+  width: 100%;
+  background: var(--paper-lifted);
+  border: 1px solid var(--paper-edge);
+  border-radius: 14px;
+  padding: 40px 44px;
+  text-align: center;
+}
+
+.email-confirm-page__eyebrow {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 14px;
+}
+
+.email-confirm-page__heading {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 36px;
+  line-height: 1.15;
+  color: var(--ink);
+  margin: 0 0 16px;
+}
+
+.email-confirm-page__body {
+  font-family: var(--ff-serif);
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  margin: 0 0 20px;
+}
+
+.email-confirm-page__body em {
+  font-style: italic;
+  color: var(--ink-2);
+}
+
+.email-confirm-page__footnote {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ink-3);
+  margin: 12px 0 0;
+}
+
+.email-confirm-page__actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.email-confirm-page__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 999px;
+  font-family: var(--ff-sans);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 1px solid transparent;
+  line-height: 1.2;
+  text-decoration: none;
+  transition: background 140ms ease, color 140ms ease, border-color 140ms ease;
+}
+
+.email-confirm-page__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.email-confirm-page__btn--primary {
+  background: var(--sage);
+  color: var(--paper-lifted);
+  border-color: var(--sage);
+}
+
+.email-confirm-page__btn--primary:hover:not(:disabled) {
+  background: var(--sage-deep, var(--sage));
+  border-color: var(--sage-deep, var(--sage));
+}
+
+.email-confirm-page__btn--ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--paper-edge);
+}
+
+.email-confirm-page__btn--ghost:hover:not(:disabled) {
+  background: var(--paper-2);
+  border-color: var(--ink-5);
+}
+
+.email-confirm-page__status {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-3);
+  margin: 16px 0 0;
+}
+
+.email-confirm-page__card[data-phase="success"] {
+  border-color: color-mix(in srgb, var(--sage) 28%, var(--paper-edge));
+}

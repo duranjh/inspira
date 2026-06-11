@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#2B2520" />
+    <title>Inspira — offline</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      html, body { margin: 0; padding: 0; height: 100%; }
+      body {
+        background: #f5f0e6;
+        color: #2b2520;
+        font-family: Georgia, "Times New Roman", "Source Serif 4", serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        line-height: 1.55;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+      .wrap {
+        max-width: 32rem;
+        text-align: left;
+      }
+      .mark {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 0.45rem;
+        font-style: italic;
+        font-weight: 400;
+        font-size: 1.125rem;
+        letter-spacing: 0.01em;
+        color: #4a413a;
+        margin-bottom: 2.25rem;
+      }
+      .mark .dot {
+        width: 0.45rem;
+        height: 0.45rem;
+        border-radius: 50%;
+        background: #6a9a7a;
+        display: inline-block;
+      }
+      h1 {
+        font-family: Georgia, "Times New Roman", "Source Serif 4", serif;
+        font-weight: 400;
+        font-size: clamp(2.25rem, 5vw, 3.25rem);
+        line-height: 1.1;
+        letter-spacing: -0.01em;
+        margin: 0 0 1rem 0;
+        color: #2b2520;
+      }
+      p {
+        font-style: italic;
+        font-size: 1.125rem;
+        line-height: 1.55;
+        color: #4a413a;
+        margin: 0 0 2rem 0;
+        max-width: 28rem;
+      }
+      .btn {
+        appearance: none;
+        border: 1px solid rgba(43, 37, 32, 0.16);
+        background: #fbf7ee;
+        color: #2b2520;
+        font-family: Georgia, "Times New Roman", "Source Serif 4", serif;
+        font-size: 0.95rem;
+        font-style: italic;
+        padding: 0.55rem 1.1rem;
+        border-radius: 999px;
+        cursor: pointer;
+        box-shadow: 0 1px 0 rgba(43, 37, 32, 0.04);
+        transition: background 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+      }
+      .btn:hover {
+        background: #f5efe0;
+      }
+      .btn:active {
+        transform: translateY(1px);
+        box-shadow: none;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .btn { transition: none; }
+        .btn:active { transform: none; }
+      }
+      @media (prefers-color-scheme: dark) {
+        body { background: #1c1611; color: #f3e8d2; }
+        .mark { color: #b8a78a; }
+        .mark .dot { background: #8fbf9e; }
+        h1 { color: #f3e8d2; }
+        p { color: #e3d5ba; }
+        .btn {
+          background: #2a2218;
+          color: #f3e8d2;
+          border-color: rgba(243, 232, 210, 0.14);
+        }
+        .btn:hover { background: #332a1f; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="mark"><span class="dot"></span>Inspira</div>
+      <h1>You&rsquo;re offline.</h1>
+      <p>Come back when you&rsquo;re connected. Anything you&rsquo;ve already mapped is still here.</p>
+      <button class="btn" type="button" onclick="window.location.reload()">Try again</button>
+    </div>
+  </body>
+</html>

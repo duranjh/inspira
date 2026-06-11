@@ -1,0 +1,514 @@
+/* B2.3 / W3 δ — Promote-to-Project dialog styles.
+ *
+ * All visuals match the B2.3 design HTML at /tmp/inspira-v12/Promote to
+ * Project.html. Class names are namespaced .pm-* to avoid collisions
+ * with the base dialog and the canvas chrome (.review-actions, etc.).
+ */
+
+.pm-dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  font-family: var(--ff-sans);
+}
+
+/* -- Cluster chip + subtitle ----------------------------------------- */
+
+.pm-dialog__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  padding: 4px 10px;
+  background: var(--gold-wash, color-mix(in srgb, var(--gold) 14%, transparent));
+  border: 1px solid var(--gold);
+  border-radius: 999px;
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  color: var(--gold-ink, var(--gold));
+}
+
+.pm-dialog__chip-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--rust);
+}
+
+.pm-dialog__subtitle {
+  margin: -8px 0 0;
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-3, var(--fg-muted));
+}
+
+/* -- Block container -------------------------------------------------- */
+
+.pm-block {
+  position: relative;
+  border: 1.5px dashed color-mix(in srgb, var(--ink, #2a1f0f) 18%, transparent);
+  border-radius: 4px;
+  padding: 14px 16px;
+  background: var(--paper, #f5f0e6);
+}
+
+.pm-block__label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-3, var(--fg-muted));
+  margin-bottom: 8px;
+}
+
+.pm-block__hint {
+  margin: 6px 0 0;
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 11.5px;
+  color: var(--ink-3, var(--fg-muted));
+}
+
+.pm-block__intro {
+  margin: 0 0 10px;
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--ink-3, var(--fg-muted));
+}
+
+.pm-block__example {
+  border: 1px dashed color-mix(in srgb, var(--ink, #2a1f0f) 14%, transparent);
+  background: var(--paper-lifted, #fbf7ee);
+  padding: 8px 10px;
+  border-radius: 4px;
+  font-family: var(--ff-serif);
+  font-size: 12px;
+  color: var(--ink-3, var(--fg-muted));
+  margin-bottom: 10px;
+}
+
+.pm-block__toggle {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--sage-ink, var(--sage));
+  padding: 4px 0;
+}
+
+.pm-modified {
+  font-family: var(--ff-mono);
+  font-size: 9px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: var(--gold-wash, color-mix(in srgb, var(--gold) 14%, transparent));
+  border: 1px solid var(--gold);
+  color: var(--gold-ink, var(--gold));
+  padding: 1px 6px;
+  border-radius: 999px;
+}
+
+/* -- Title input ----------------------------------------------------- */
+
+.pm-title-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  border-bottom: 1.5px dashed color-mix(in srgb, var(--ink, #2a1f0f) 22%, transparent);
+  font-family: var(--ff-serif);
+  font-size: 20px;
+  font-weight: 400;
+  padding: 4px 0 6px;
+  color: inherit;
+  outline: none;
+  transition: border-color 120ms ease;
+}
+
+.pm-title-input:focus {
+  border-bottom-color: var(--sage);
+}
+
+/* -- Topic seed list ------------------------------------------------- */
+
+.pm-topic-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pm-topic {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: start;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 4px;
+  background: var(--paper-lifted, #fbf7ee);
+  border: 1px solid color-mix(in srgb, var(--ink, #2a1f0f) 8%, transparent);
+  position: relative;
+}
+
+.pm-topic[data-drag-over="before"]::before,
+.pm-topic[data-drag-over="after"]::after {
+  content: "";
+  position: absolute;
+  left: 6px;
+  right: 6px;
+  height: 2px;
+  background: var(--sage);
+  border-radius: 1px;
+}
+
+.pm-topic[data-drag-over="before"]::before {
+  top: -3px;
+}
+.pm-topic[data-drag-over="after"]::after {
+  bottom: -3px;
+}
+
+.pm-topic--removed {
+  opacity: 0.35;
+  text-decoration: line-through;
+}
+
+.pm-topic--added .pm-topic__name {
+  color: var(--sage-ink, var(--sage));
+}
+
+.pm-topic__handle {
+  /* The handle is a <button> so it's focusable and keyboard-operable
+     (closes #132). Strip the native button chrome so it still reads
+     visually as a bare ⠿ glyph. */
+  appearance: none;
+  background: transparent;
+  border: 0;
+  cursor: grab;
+  color: var(--ink-4, color-mix(in srgb, var(--ink, #2a1f0f) 35%, transparent));
+  font-size: 14px;
+  user-select: none;
+  padding: 4px 2px 0 2px;
+  line-height: 1;
+  border-radius: 4px;
+}
+
+.pm-topic__handle:focus-visible {
+  outline: 2px solid var(--accent, var(--sage));
+  outline-offset: 1px;
+}
+
+.pm-topic__handle:active {
+  cursor: grabbing;
+}
+
+.pm-topic__handle:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.pm-topic__body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.pm-topic__name {
+  border: none;
+  background: transparent;
+  font-family: var(--ff-serif);
+  font-size: 14px;
+  font-weight: 500;
+  color: inherit;
+  padding: 2px 0;
+  outline: none;
+  width: 100%;
+}
+
+.pm-topic__name:focus {
+  outline: 1px dashed var(--sage);
+  outline-offset: 2px;
+}
+
+.pm-topic__desc {
+  border: none;
+  background: transparent;
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 12px;
+  color: var(--ink-3, var(--fg-muted));
+  padding: 2px 0;
+  outline: none;
+  width: 100%;
+}
+
+.pm-topic__remove {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--ink-3, var(--fg-muted));
+  font-size: 16px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.pm-topic__remove:hover {
+  background: var(--rust-wash, color-mix(in srgb, var(--rust) 12%, transparent));
+  color: var(--rust-ink, var(--rust));
+}
+
+.pm-add-topic {
+  margin-top: 8px;
+  background: none;
+  border: none;
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  color: var(--sage-ink, var(--sage));
+  cursor: pointer;
+  padding: 6px 0;
+  align-self: flex-start;
+}
+
+.pm-add-topic:hover {
+  text-decoration: underline;
+}
+
+/* -- Decisions preview list ------------------------------------------ */
+
+.pm-decisions__full {
+  list-style: none;
+  margin: 8px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pm-decisions__item {
+  display: grid;
+  grid-template-columns: auto auto auto 1fr;
+  align-items: baseline;
+  gap: 6px;
+  font-family: var(--ff-sans);
+  font-size: 12px;
+}
+
+.pm-decisions__dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--gold);
+  display: inline-block;
+}
+
+.pm-decisions__topic {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  color: var(--ink-3, var(--fg-muted));
+}
+
+.pm-decisions__sep {
+  color: var(--ink-4, color-mix(in srgb, var(--ink, #2a1f0f) 30%, transparent));
+}
+
+/* -- Footer ---------------------------------------------------------- */
+
+.pm-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--ink, #2a1f0f) 12%, transparent);
+}
+
+.pm-footer__spacer {
+  flex: 1;
+}
+
+.pm-footer__cancel {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  color: var(--ink-3, var(--fg-muted));
+  padding: 4px 8px;
+}
+
+.pm-footer__sendback-toggle {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold-ink, var(--gold));
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 7px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pm-footer__sendback-toggle:hover:not(:disabled) {
+  background: var(--gold-wash, color-mix(in srgb, var(--gold) 12%, transparent));
+}
+
+.pm-footer__promote {
+  background: var(--sage);
+  border: 1px solid var(--sage);
+  color: #fff;
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 18px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pm-footer__promote:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--sage) 90%, var(--ink, #2a1f0f));
+}
+
+.pm-footer__promote:disabled,
+.pm-footer__sendback-toggle:disabled,
+.pm-footer__cancel:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pm-dialog__error {
+  background: var(--rust-wash, color-mix(in srgb, var(--rust) 8%, transparent));
+  border: 1px solid var(--rust);
+  border-radius: 4px;
+  padding: 8px 10px;
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  color: var(--rust-ink, var(--rust));
+}
+
+/* -- Send-back panel -------------------------------------------------- */
+
+.pm-sendback {
+  margin-top: 8px;
+  background: var(--gold-wash, color-mix(in srgb, var(--gold) 12%, transparent));
+  border: 1px solid var(--gold);
+  border-radius: 4px;
+  padding: 14px;
+}
+
+.pm-sendback__label {
+  font-family: var(--ff-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold-ink, var(--gold));
+  margin-bottom: 6px;
+}
+
+.pm-sendback__textarea {
+  width: 100%;
+  min-height: 60px;
+  font-family: var(--ff-serif);
+  font-size: 13px;
+  /* Form elements (textarea/input) don't inherit color from body in
+     Chrome/Safari — without an explicit color the text falls back to
+     the UA default which is white-on-cream in the Modern theme. Same
+     root cause as #155 (inbox titles). */
+  color: var(--ink);
+  border: 1px solid color-mix(in srgb, var(--ink, #2a1f0f) 18%, transparent);
+  border-radius: 4px;
+  padding: 8px;
+  background: var(--paper-lifted, #fbf7ee);
+  resize: vertical;
+}
+
+.pm-sendback__textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.pm-sendback__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.pm-sendback__cancel,
+.pm-sendback__submit {
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  border-radius: 4px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.pm-sendback__cancel {
+  background: none;
+  border: none;
+  color: var(--ink-3, var(--fg-muted));
+}
+
+.pm-sendback__submit {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold-ink, var(--gold));
+}
+
+.pm-sendback__submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* -- Spawning overlay ------------------------------------------------ */
+
+.pm-spawning {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: color-mix(in srgb, var(--paper-lifted, #fbf7ee) 90%, transparent);
+  backdrop-filter: blur(2px);
+  border-radius: inherit;
+}
+
+.pm-spawning__spinner {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2.5px solid var(--sage-wash, color-mix(in srgb, var(--sage) 22%, transparent));
+  border-top-color: var(--sage);
+  animation: pmSpin 0.8s linear infinite;
+}
+
+.pm-spawning__text {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--sage-ink, var(--sage));
+}
+
+@keyframes pmSpin {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pm-spawning__spinner {
+    animation: none;
+    border-top-color: var(--sage);
+  }
+}

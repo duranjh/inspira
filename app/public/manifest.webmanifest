@@ -1,0 +1,19 @@
+{
+  "name": "Inspira",
+  "short_name": "Inspira",
+  "description": "From feedback to features.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#F5F0E6",
+  "theme_color": "#2B2520",
+  "orientation": "any",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-192.svg", "sizes": "192x192", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/apple-touch-icon.svg", "sizes": "180x180", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-512.svg", "sizes": "512x512", "type": "image/svg+xml", "purpose": "any maskable" }
+  ],
+  "categories": ["productivity", "education", "lifestyle"],
+  "launch_handler": { "client_mode": "navigate-existing" }
+}

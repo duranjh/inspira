@@ -1,0 +1,57 @@
+title: "[show & tell] "
+labels: ["show-and-tell"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        We love seeing what people build with Inspira. Research projects, novel outlines, startup plans, course syllabi, home renovations — all fair game. Share as much or as little as you're comfortable with.
+
+  - type: input
+    id: title
+    attributes:
+      label: What did you make?
+      description: A short headline.
+      placeholder: "A planning tree for my thesis defense"
+    validations:
+      required: true
+
+  - type: textarea
+    id: story
+    attributes:
+      label: Tell us about it
+      description: What were you thinking through? What did the canvas end up looking like? Anything that surprised you, or that you wish Inspira had done differently?
+      placeholder: "I started with one topic and it grew into..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Screenshots or shared canvas link
+      description: Drop images or a public link. Please redact anything sensitive before posting.
+      placeholder: "Attach images or paste a link."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: domain
+    attributes:
+      label: What kind of work was this?
+      options:
+        - Academic / research
+        - Writing / creative
+        - Product / startup
+        - Personal project
+        - Teaching / learning
+        - Other
+    validations:
+      required: false
+
+  - type: textarea
+    id: feedback
+    attributes:
+      label: Anything you'd tell the Inspira team?
+      description: Pain points, missing features, or small delights — all useful.
+      placeholder: "Optional."
+    validations:
+      required: false

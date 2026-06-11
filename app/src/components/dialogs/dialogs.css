@@ -1,0 +1,714 @@
+/* ============================================================================
+   Inspira — modal dialogs
+   ============================================================================
+
+   Warm-editorial replacement for window.prompt / window.confirm. The base
+   `Dialog` component owns backdrop, paper card, motion, and the action row;
+   every dialog (rename/delete/share/export) composes it and supplies body
+   content + action labels.
+
+   Tokens come from App.css (--paper, --ink-*, --paper-edge, --sage, --rust,
+   --ff-serif, --ff-sans, --ff-mono). A handful of fallback colors are baked
+   in so the dialogs still render sanely if the root variables aren't set.
+
+   Motion:
+   - 180ms fade + slide-up entrance on the card, 160ms crossfade on the
+     backdrop. Exit uses the same timings so the dialog doesn't vanish in
+     one frame when closed. Respects prefers-reduced-motion.
+
+   Layering:
+   - Backdrop at z-index 3000 to sit cleanly above the topic-detail drawer
+     (which uses z-index 100) and every other z'd surface in the app.
+   ============================================================================ */
+
+/* ---- Backdrop + paper card ----------------------------------------------- */
+
+.dlg__backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(43, 37, 32, 0.32);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  animation: dlg-backdrop-in 160ms ease-out;
+}
+
+.dlg__backdrop[data-state="closing"] {
+  animation: dlg-backdrop-out 140ms ease-in forwards;
+}
+
+.dlg__card {
+  position: relative;
+  width: 100%;
+  max-height: calc(100vh - 48px); /* fallback for pre-dvh browsers */
+  max-height: calc(100dvh - 48px);
+  overflow-y: auto;
+  background: #fbf7ee;
+  color: var(--ink, #2b2520);
+  border: 1px solid var(--paper-edge, #dbcfb6);
+  border-radius: var(--radius-card, 14px);
+  box-shadow:
+    0 32px 80px -24px rgba(43, 37, 32, 0.40),
+    0 2px 4px rgba(43, 37, 32, 0.06);
+  padding: 28px 28px 22px;
+  animation: dlg-card-in 180ms cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+.dlg__backdrop[data-state="closing"] .dlg__card {
+  animation: dlg-card-out 140ms ease-in forwards;
+}
+
+/* Dark mode — swap the lifted-paper card for a warm espresso surface, same
+   as the other paper components in App.css. */
+:root[data-theme="dark"] .dlg__card {
+  background: #2a2218;
+}
+
+/* Modern Dark — cool-slate counterpart. */
+:root[data-style="modern"][data-theme="dark"] .dlg__card {
+  background: var(--paper-lifted);
+}
+
+/* ---- Header ------------------------------------------------------------- */
+
+.dlg__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.dlg__title {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  font-weight: 500;
+  color: var(--ink, #2b2520);
+  margin: 0;
+}
+
+.dlg__close {
+  -webkit-appearance: none; /* Safari 14/15.x — strip native button chrome */
+  appearance: none;
+  background: transparent;
+  border: 1px solid var(--paper-edge, #dbcfb6);
+  color: var(--ink-2, #4a413a);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  font-family: var(--ff-serif, Georgia, serif);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.dlg__close:hover {
+  background: var(--paper-3, #e6dcc8);
+  border-color: var(--ink-5, #c8beae);
+}
+
+.dlg__close:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--sage, #6a9a7a) 60%, transparent);
+  outline-offset: 2px;
+}
+
+/* ---- Body --------------------------------------------------------------- */
+
+.dlg__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-family: var(--ff-serif, Georgia, serif);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2, #4a413a);
+}
+
+.dlg__body p {
+  margin: 0;
+}
+
+.dlg__body em,
+.dlg__paragraph--italic {
+  font-style: italic;
+  color: var(--ink-2, #4a413a);
+}
+
+/* ---- Action row --------------------------------------------------------- */
+
+.dlg__actions {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  /* i18n safety: long DE/FR action labels can wrap to a second row instead
+     of overflowing the dialog card on narrow desktops. */
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-soft, rgba(43, 37, 32, 0.08));
+}
+
+.dlg__btn {
+  font-family: var(--ff-sans, system-ui, sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  padding: 9px 18px;
+  border-radius: var(--radius-btn, 999px);
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease,
+    border-color 120ms ease, color 120ms ease, opacity 150ms ease;
+  border: 1px solid transparent;
+}
+
+.dlg__btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.dlg__btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--sage, #6a9a7a) 60%, transparent);
+  outline-offset: 2px;
+}
+
+/* Primary — ink pill (default) */
+.dlg__btn--primary {
+  background: var(--ink, #2b2520);
+  color: var(--paper, #f5f0e6);
+  border-color: var(--ink, #2b2520);
+}
+.dlg__btn--primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+/* Primary — rust-tinted pill for destructive actions */
+.dlg__btn--danger {
+  background: var(--rust, #b06a50);
+  color: #fbf7ee;
+  border-color: var(--rust, #b06a50);
+}
+.dlg__btn--danger:hover:not(:disabled) {
+  transform: translateY(-1px);
+  background: color-mix(in srgb, var(--rust, #b06a50) 88%, #000);
+  border-color: color-mix(in srgb, var(--rust, #b06a50) 88%, #000);
+}
+
+/* Secondary — paper-edge outline */
+.dlg__btn--secondary {
+  background: transparent;
+  color: var(--ink-2, #4a413a);
+  border-color: var(--paper-edge, #dbcfb6);
+}
+.dlg__btn--secondary:hover:not(:disabled) {
+  border-color: var(--ink-5, #c8beae);
+  color: var(--ink, #2b2520);
+}
+
+.dlg__btn--busy {
+  cursor: progress;
+}
+
+.dlg__btn-spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 8px;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  vertical-align: -2px;
+  animation: dlg-spin 0.9s linear infinite;
+}
+
+/* ---- Inputs (rename, share-link, typed-confirmation) -------------------- */
+
+.dlg__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dlg__label {
+  font-family: var(--ff-mono, ui-monospace, monospace);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3, #7a6f64);
+}
+
+.dlg__input {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-size: 16px;
+  line-height: 1.45;
+  padding: 11px 14px;
+  background: var(--paper, #f5f0e6);
+  color: var(--ink, #2b2520);
+  border: 1px solid var(--paper-edge, #dbcfb6);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  width: 100%;
+}
+
+.dlg__input:focus {
+  border-color: var(--ink-5, #c8beae);
+  box-shadow: 0 0 0 3px rgba(43, 37, 32, 0.10);
+}
+
+.dlg__input::placeholder {
+  color: var(--ink-4, #a89e91);
+  font-style: italic;
+}
+
+.dlg__input--mono {
+  font-family: var(--ff-mono, ui-monospace, monospace);
+  font-size: 12.5px;
+  letter-spacing: 0.01em;
+}
+
+/* ---- Rename-dialog specifics -------------------------------------------- */
+
+.dlg__rename-hint {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-3, #7a6f64);
+  margin: 10px 0 0;
+}
+
+/* ---- Delete-confirmation specifics -------------------------------------- */
+
+.dlg__delete-consequences {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2, #4a413a);
+}
+
+.dlg__delete-name {
+  font-style: normal;
+  font-weight: 500;
+  color: var(--ink, #2b2520);
+}
+
+.dlg__typed-confirm-hint {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-3, #7a6f64);
+}
+
+/* ---- F.5 stale-edit-confirm specifics ----------------------------------- */
+
+.dlg__stale-edit-body {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2, #4a413a);
+  margin: 0 0 16px 0;
+}
+.dlg__stale-edit-body strong {
+  font-style: normal;
+  font-weight: 500;
+  color: var(--ink, #2b2520);
+}
+
+.dlg__stale-edit-refresh {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px dashed var(--paper-edge, #d8cfc4);
+  border-radius: 4px;
+  background: var(--paper-soft, rgba(0, 0, 0, 0.02));
+}
+.dlg__stale-edit-refresh-cta {
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--sage);
+  border: 1px solid var(--sage);
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+.dlg__stale-edit-refresh-hint {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--ink-3, #7a6f64);
+}
+
+/* ---- Share-link specifics ----------------------------------------------- */
+
+.dlg__share-description {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 14.5px;
+  color: var(--ink-3, #7a6f64);
+  line-height: 1.55;
+}
+
+.dlg__share-link-row {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+.dlg__share-link-row .dlg__input {
+  flex: 1;
+}
+
+.dlg__copy-btn {
+  font-family: var(--ff-sans, system-ui, sans-serif);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  padding: 0 16px;
+  height: auto;
+  min-height: 44px;
+  border: 1px solid var(--paper-edge, #dbcfb6);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--ink-2, #4a413a);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.dlg__copy-btn:hover:not(:disabled) {
+  background: var(--paper-3, #e6dcc8);
+  border-color: var(--ink-5, #c8beae);
+}
+.dlg__copy-btn[data-state="copied"] {
+  color: var(--sage, #6a9a7a);
+  border-color: var(--sage, #6a9a7a);
+}
+
+.dlg__share-empty {
+  padding: 18px;
+  border: 1px dashed var(--paper-edge, #dbcfb6);
+  border-radius: 10px;
+  text-align: center;
+  background: var(--paper, #f5f0e6);
+}
+
+.dlg__share-generate-btn {
+  font-family: var(--ff-sans, system-ui, sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 9px 18px;
+  border-radius: var(--radius-btn, 999px);
+  border: 1px solid var(--ink, #2b2520);
+  background: var(--ink, #2b2520);
+  color: var(--paper, #f5f0e6);
+  cursor: pointer;
+  transition: transform 120ms ease, opacity 150ms ease;
+}
+.dlg__share-generate-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.dlg__share-generate-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dlg__share-revoke-row {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 6px;
+}
+.dlg__share-revoke-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--rust, #b06a50);
+  cursor: pointer;
+  text-decoration: underline dotted;
+  text-underline-offset: 3px;
+}
+.dlg__share-revoke-btn:hover {
+  color: color-mix(in srgb, var(--rust, #b06a50) 85%, #000);
+}
+.dlg__share-revoke-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.dlg__share-error {
+  font-family: var(--ff-mono, ui-monospace, monospace);
+  font-size: 11.5px;
+  color: var(--rust, #b06a50);
+  padding: 10px 12px;
+  border-left: 2px solid var(--rust, #b06a50);
+  background: rgba(176, 106, 80, 0.08);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* ---- Export-options specifics ------------------------------------------- */
+
+.dlg__radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dlg__radio-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--paper-edge, #dbcfb6);
+  border-radius: 10px;
+  background: var(--paper, #f5f0e6);
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+}
+
+.dlg__radio-option:hover {
+  border-color: var(--ink-5, #c8beae);
+}
+
+.dlg__radio-option--selected {
+  border-color: var(--sage, #6a9a7a);
+  background: color-mix(in srgb, var(--sage, #6a9a7a) 10%, var(--paper, #f5f0e6));
+}
+
+.dlg__radio-option input[type="radio"] {
+  margin: 4px 0 0;
+  accent-color: var(--sage, #6a9a7a);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.dlg__radio-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.dlg__radio-title {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink, #2b2520);
+  line-height: 1.3;
+}
+
+.dlg__radio-desc {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-3, #7a6f64);
+  line-height: 1.4;
+}
+
+/* ---- Motion keyframes --------------------------------------------------- */
+
+@keyframes dlg-backdrop-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes dlg-backdrop-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes dlg-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes dlg-card-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8px) scale(0.99);
+  }
+}
+
+@keyframes dlg-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Reduced motion — drop the slide, just fade. */
+@media (prefers-reduced-motion: reduce) {
+  .dlg__backdrop,
+  .dlg__backdrop[data-state="closing"],
+  .dlg__card,
+  .dlg__backdrop[data-state="closing"] .dlg__card {
+    animation: none;
+  }
+  .dlg__btn-spinner {
+    animation: none;
+    opacity: 0.5;
+  }
+}
+
+/* ---- Narrow viewport ---------------------------------------------------- */
+
+/* Tablet / large-phone landscape — tighten paddings before the full sheet
+   takeover. Card stays a centered card but trims edge gutter and shrinks
+   the title so it doesn't crowd a 700-ish-px viewport. */
+@media (max-width: 768px) {
+  .dlg__backdrop {
+    padding: 16px;
+  }
+  .dlg__card {
+    max-width: 560px;
+    padding: 24px 22px 20px;
+  }
+  .dlg__title {
+    font-size: 22px;
+  }
+  /* Bump the bare-minimum tap target on the secondary share/copy controls so
+     they meet 44px on touch even before we cross the phone breakpoint. */
+  .dlg__btn {
+    min-height: 44px;
+    padding: 11px 18px;
+  }
+}
+
+@media (max-width: 520px) {
+  .dlg__backdrop {
+    /* Tighter side margins; slide up from bottom so it feels like a sheet. */
+    padding: 8px;
+    padding-bottom: calc(8px + env(safe-area-inset-bottom, 0));
+    align-items: flex-end;
+  }
+  .dlg__card {
+    /* 100vw minus 16px margins (8px each side). */
+    width: 100%;
+    max-width: 100%;
+    border-radius: 18px 18px 0 0;
+    /* Tighten body padding from 28px to 24px on mobile. */
+    padding: 24px 20px 20px;
+    /* Safe-area-inset-bottom so content clears the home bar. */
+    padding-bottom: calc(20px + env(safe-area-inset-bottom, 0));
+  }
+  .dlg__title {
+    font-size: 22px;
+  }
+  .dlg__body {
+    font-size: 14px;
+  }
+  /* Action row: stack full-width. column-reverse puts the first item (danger/
+     primary) visually on TOP, Cancel below — matches spec: destructive first. */
+  .dlg__actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: 8px;
+  }
+  .dlg__btn {
+    width: 100%;
+    padding: 13px 18px;
+    min-height: 44px;
+    text-align: center;
+    justify-content: center;
+  }
+  /* Share: stack the link input + copy button. */
+  .dlg__share-link-row {
+    flex-direction: column;
+  }
+  .dlg__copy-btn {
+    min-height: 44px;
+  }
+  /* The typed-confirmation input: enforce 16px so iOS doesn't zoom. */
+  .dlg__input {
+    font-size: 16px;
+  }
+}
+
+/* Phone — full-screen takeover. At very narrow widths the bottom-sheet
+   becomes a true full-screen surface so long content (delete confirmations,
+   share links, export option lists) has room to breathe without forcing
+   the user to scroll inside a tiny floating card. */
+@media (max-width: 480px) {
+  .dlg__backdrop {
+    padding: 0;
+    padding-bottom: 0;
+    align-items: stretch;
+    justify-content: stretch;
+    background: rgba(43, 37, 32, 0.45);
+  }
+  .dlg__card {
+    width: 100vw;
+    max-width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    border-radius: 0;
+    border: none;
+    box-shadow: none;
+    padding: 22px 18px 18px;
+    padding-top: calc(22px + env(safe-area-inset-top, 0));
+    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0));
+    /* Use a column layout so the action row can be pinned to the bottom of
+       the sheet via margin-top: auto on .dlg__actions. */
+    display: flex;
+    flex-direction: column;
+  }
+  .dlg__title {
+    font-size: 24px;
+  }
+  .dlg__body {
+    flex: 1;
+  }
+  .dlg__actions {
+    margin-top: auto;
+  }
+  /* Radio options breathe a bit more so each tap zone is comfortable. */
+  .dlg__radio-option {
+    padding: 14px 14px;
+    min-height: 56px;
+  }
+  /* Close button gets a bigger hit area since one-handed reach matters most
+     on phone-sized screens. */
+  .dlg__close {
+    width: 44px;
+    height: 44px;
+  }
+}
+
+/* ---- Close button: 44×44 tap target on touch pointers -----------------
+   Base .dlg__close is 32×32 (tight for thumbs). Grow to 44×44 on any
+   coarse pointer so the dialog is easily dismissable one-handed. */
+@media (pointer: coarse) {
+  .dlg__close {
+    width: 44px;
+    height: 44px;
+  }
+}

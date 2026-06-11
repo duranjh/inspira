@@ -1,0 +1,10 @@
+# Shell scripts must have LF line endings even when checked out on Windows.
+# Without this, git autocrlf rewrites them to CRLF on Windows dev machines,
+# which makes them unrunnable on the Linux CI runner and production Linux
+# hosts (bash errors with "bad interpreter: /usr/bin/env^M").
+*.sh text eol=lf
+
+# Dockerfile / compose must also be LF so `docker build` on Linux hosts
+# accepts the file without complaining about stray CRs in CMD/RUN.
+Dockerfile text eol=lf
+*.Dockerfile text eol=lf

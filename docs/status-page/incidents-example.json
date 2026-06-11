@@ -1,0 +1,39 @@
+{
+  "current_status": "operational",
+  "components": [
+    { "name": "Website",        "status": "operational", "message": "" },
+    { "name": "App",            "status": "operational", "message": "" },
+    { "name": "Planner (LLM)",  "status": "operational", "message": "" },
+    { "name": "Database",       "status": "operational", "message": "" },
+    { "name": "Email delivery", "status": "operational", "message": "" }
+  ],
+  "incidents": [
+    {
+      "id": "inc-2026-03-14-planner-timeouts",
+      "title": "Planner responses timing out during kickoff",
+      "severity": "major",
+      "started_at": "2026-03-14T18:42:00Z",
+      "resolved_at": "2026-03-14T20:36:00Z",
+      "affected_components": ["Planner (LLM)"],
+      "status_updates": [
+        {
+          "at": "2026-03-14T18:42:00Z",
+          "message": "We are investigating reports that kickoff requests are timing out. New projects may fail to generate topics."
+        },
+        {
+          "at": "2026-03-14T19:05:00Z",
+          "message": "We have identified elevated latency from our LLM provider. Existing projects and topic interviews are unaffected."
+        },
+        {
+          "at": "2026-03-14T19:48:00Z",
+          "message": "We have switched to a fallback model pool. Latency is recovering."
+        },
+        {
+          "at": "2026-03-14T20:36:00Z",
+          "message": "Resolved. Kickoff times are back to normal. Total duration: 1h 54m. A post-mortem will be published within five business days."
+        }
+      ]
+    }
+  ],
+  "last_updated": "2026-04-20T00:00:00Z"
+}

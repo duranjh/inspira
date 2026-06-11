@@ -1,0 +1,18 @@
+Three days of {plan_name} left, {display_name}.
+
+Your Inspira {plan_name} trial ends on {trial_ends_at_human}. Nothing
+breaks if you do nothing — the workspace drops back to Free and your
+projects stay with you, untouched, for the grace window.
+
+If {plan_name} has earned its keep, keep it. If not, keep Free. Both
+are honest choices.
+
+Stay on {plan_name}:
+{upgrade_url}
+
+Or drop back to Free when the trial ends:
+{stay_free_url}
+
+—
+We only send this note once per trial. No countdowns, no nudges after
+this.

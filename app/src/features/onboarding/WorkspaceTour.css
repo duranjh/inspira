@@ -1,0 +1,127 @@
+/* Inspira — first-run workspace tour welcome modal.
+ * Renders before the Coachmark spotlight engine takes over. The
+ * spotlight steps own their own backdrop + card; this modal is a
+ * separate surface so we can ask "want the tour?" before pointing
+ * at any UI. */
+
+.wt-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100; /* above the rail (z ~50) and below the Coachmark (~1200) */
+  animation: wt-fade-in 180ms ease-out;
+}
+
+.wt-card {
+  background: var(--paper-lifted, #fbf7ee);
+  border: 1px solid var(--paper-edge, #e8e2d3);
+  border-radius: 12px;
+  padding: 28px 32px 24px;
+  width: min(440px, calc(100vw - 32px));
+  box-shadow: 0 18px 60px -12px rgba(43, 37, 32, 0.32);
+  animation: wt-pop-in 220ms cubic-bezier(0.2, 0.9, 0.3, 1.05);
+}
+
+.wt-title {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-size: 22px;
+  font-weight: 500;
+  margin: 0 0 8px;
+  color: var(--ink-1, #2b2520);
+}
+
+.wt-body {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--ink-2, #4a423a);
+  margin: 0 0 20px;
+}
+
+.wt-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.wt-btn {
+  font-family: var(--ff-sans, system-ui, sans-serif);
+  font-size: 13.5px;
+  font-weight: 500;
+  border-radius: 999px;
+  padding: 8px 18px;
+  cursor: pointer;
+  transition: transform 120ms ease, background 120ms ease, color 120ms ease,
+    border-color 120ms ease;
+  border: 1px solid transparent;
+}
+.wt-btn:focus-visible {
+  outline: 2px solid var(--sage, #7a8c70);
+  outline-offset: 2px;
+}
+
+.wt-btn--ghost {
+  background: transparent;
+  color: var(--ink-3, #6b665d);
+  border-color: transparent;
+}
+.wt-btn--ghost:hover {
+  color: var(--ink-1, #2b2520);
+  background: rgba(43, 37, 32, 0.05);
+}
+
+.wt-btn--primary {
+  background: var(--sage, #7a8c70);
+  color: white;
+  border-color: var(--sage, #7a8c70);
+}
+.wt-btn--primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px -4px rgba(122, 140, 112, 0.4);
+}
+
+@keyframes wt-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes wt-pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wt-backdrop,
+  .wt-card {
+    animation: none;
+  }
+  .wt-btn--primary:hover {
+    transform: none;
+  }
+}
+
+/* Stack actions vertically on narrow viewports so neither button
+   gets clipped by the card padding. */
+@media (max-width: 420px) {
+  .wt-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+  .wt-btn {
+    width: 100%;
+  }
+}

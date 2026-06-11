@@ -1,0 +1,1646 @@
+openapi: 3.1.0
+info:
+  title: Inspira backend
+  version: 0.2.0
+  description: |
+    HTTP API for the Inspira planning product (repo codename:
+    planning-studio). Checked-in copy of the spec FastAPI publishes at
+    `/openapi.json` when the app is running. Route shapes are sourced
+    from `services/planning_studio_service/api.py` and
+    `services/planning_studio_service/auth.py`.
+
+servers:
+  - url: http://127.0.0.1:4174
+    description: Local dev default
+  - url: https://api.tryinspira.com
+    description: Production (example)
+
+tags:
+  - name: meta
+    description: Health + diagnostics.
+  - name: auth
+    description: Signup, login, session, profile.
+  - name: v2
+    description: Inspira canvas — current product surface.
+  - name: v1
+    description: Legacy Planning Studio endpoints. Deprecated.
+
+components:
+  securitySchemes:
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: inspira_session
+      description: |
+        Signed itsdangerous cookie set by `/api/auth/signup` or
+        `/api/auth/login`. Attributes: HttpOnly, SameSite=Lax,
+        Max-Age=30d, Path=/, Secure when INSPIRA_COOKIE_SECURE=true.
+
+  parameters:
+    ProjectId:
+      in: path
+      name: project_id
+      required: true
+      schema:
+        type: string
+      description: v2 project id.
+    TopicId:
+      in: path
+      name: topic_id
+      required: true
+      schema:
+        type: string
+      description: Topic id.
+
+  schemas:
+
+    # -----------------------------------------------------------------
+    # Shared shapes
+    # -----------------------------------------------------------------
+
+    HealthResponse:
+      type: object
+      required: [service, status, generated_at]
+      properties:
+        service:
+          type: string
+          example: planning-studio
+        status:
+          type: string
+          example: ok
+        generated_at:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      required: [detail]
+      properties:
+        detail:
+          oneOf:
+            - type: string
+            - type: object
+
+    # -----------------------------------------------------------------
+    # Auth
+    # -----------------------------------------------------------------
+
+    SignupBody:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 320
+        password:
+          type: string
+          minLength: 8
+          maxLength: 256
+        display_name:
+          type: string
+          default: ""
+          maxLength: 200
+
+    LoginBody:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    AuthedUser:
+      type: object
+      required: [user_id, email, display_name, is_system]
+      properties:
+        user_id:
+          type: string
+          example: user-abc123def456
+        email:
+          type: string
+          format: email
+        display_name:
+          type: string
+        is_system:
+          type: boolean
+
+    LogoutResponse:
+      type: object
+      required: [logged_out]
+      properties:
+        logged_out:
+          type: boolean
+
+    # -----------------------------------------------------------------
+    # v2 core domain
+    # -----------------------------------------------------------------
+
+    Topic:
+      type: object
+      required:
+        - topic_id
+        - project_id
+        - title
+        - icon
+        - position_x
+        - position_y
+        - status
+        - order_index
+        - origin
+        - created_at
+        - updated_at
+      properties:
+        topic_id:
+          type: string
+          example: topic-abc123def4
+        project_id:
+          type: string
+        title:
+          type: string
+          maxLength: 200
+        icon:
+          type: string
+        position_x:
+          type: number
+          format: float
+        position_y:
+          type: number
+          format: float
+        status:
+          type: string
+          enum: [empty, in_progress, fleshed_out]
+        order_index:
+          type: integer
+        origin:
+          type: string
+          enum: [planner_initial, planner_proposed, user_manual]
+        metadata:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+
+    Relationship:
+      type: object
+      required:
+        - relationship_id
+        - project_id
+        - source_topic_id
+        - target_topic_id
+        - created_at
+      properties:
+        relationship_id:
+          type: string
+        project_id:
+          type: string
+        source_topic_id:
+          type: string
+        target_topic_id:
+          type: string
+        label:
+          type:
+            - string
+            - "null"
+          maxLength: 120
+        origin:
+          type: string
+          enum: [planner_inferred, user_drawn]
+        strength:
+          type:
+            - string
+            - "null"
+          enum: [implied, confirmed, null]
+        created_at:
+          type: string
+          format: date-time
+        deleted_at:
+          type:
+            - string
+            - "null"
+          format: date-time
+
+    Decision:
+      type: object
+      required:
+        - decision_id
+        - topic_id
+        - project_id
+        - statement
+        - status
+        - proposed_by
+        - created_at
+        - updated_at
+      properties:
+        decision_id:
+          type: string
+        topic_id:
+          type: string
+        project_id:
+          type: string
+        statement:
+          type: string
+          maxLength: 2000
+        rationale:
+          type:
+            - string
+            - "null"
+          maxLength: 4000
+        status:
+          type: string
+          enum: [proposed, confirmed, retracted]
+        source_turn_id:
+          type:
+            - string
+            - "null"
+        proposed_by:
+          type: string
+          enum: [planner, user]
+        confirmed_by_user_id:
+          type:
+            - string
+            - "null"
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        retracted_at:
+          type:
+            - string
+            - "null"
+
+    QnaTurn:
+      type: object
+      required:
+        - turn_id
+        - topic_id
+        - project_id
+        - role
+        - order_index
+        - body
+        - status
+        - created_at
+      properties:
+        turn_id:
+          type: string
+        topic_id:
+          type: string
+        project_id:
+          type: string
+        role:
+          type: string
+          enum: [planner, user]
+        order_index:
+          type: integer
+        body:
+          type: string
+        why_this_matters:
+          type:
+            - string
+            - "null"
+        action:
+          type:
+            - string
+            - "null"
+          enum: [ask, pressure_test, followup, suggest_close, null]
+        suggested_responses:
+          type: array
+          items:
+            $ref: '#/components/schemas/SuggestedResponse'
+        status:
+          type: string
+          enum: [open, answered, deferred, na]
+        parent_turn_id:
+          type:
+            - string
+            - "null"
+        attachments:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+
+    V2Project:
+      type: object
+      required:
+        - project_id
+        - user_id
+        - title
+        - created_at
+        - updated_at
+      properties:
+        project_id:
+          type: string
+        user_id:
+          type: string
+        title:
+          type: string
+          maxLength: 200
+        metadata:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    # -----------------------------------------------------------------
+    # Request bodies (v2)
+    # -----------------------------------------------------------------
+
+    AttachedSource:
+      type: object
+      properties:
+        display_name:
+          type: string
+          default: ""
+          maxLength: 500
+        kind:
+          type: string
+          default: ""
+          maxLength: 60
+        excerpt:
+          type: string
+          default: ""
+          maxLength: 20000
+
+    KickoffBody:
+      type: object
+      properties:
+        user_idea:
+          type: string
+          default: ""
+          maxLength: 8000
+        attached_sources:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/AttachedSource'
+
+    TopicCreateBody:
+      type: object
+      properties:
+        title:
+          type: string
+          default: ""
+          maxLength: 200
+        icon:
+          type: string
+          default: flag
+          maxLength: 40
+        position_x:
+          type: number
+          format: float
+          default: 0.0
+        position_y:
+          type: number
+          format: float
+          default: 0.0
+
+    TopicUpdateBody:
+      type: object
+      properties:
+        title:
+          type:
+            - string
+            - "null"
+          maxLength: 200
+        icon:
+          type:
+            - string
+            - "null"
+          maxLength: 40
+        position_x:
+          type:
+            - number
+            - "null"
+          format: float
+        position_y:
+          type:
+            - number
+            - "null"
+          format: float
+        status:
+          type:
+            - string
+            - "null"
+          maxLength: 40
+
+    TopicTurnBody:
+      type: object
+      properties:
+        user_answer:
+          type: string
+          default: ""
+          maxLength: 8000
+        attached_sources:
+          type: array
+          maxItems: 10
+          items:
+            $ref: '#/components/schemas/AttachedSource'
+
+    DecisionCreateBody:
+      type: object
+      properties:
+        statement:
+          type: string
+          default: ""
+          maxLength: 2000
+        rationale:
+          type:
+            - string
+            - "null"
+          maxLength: 4000
+        source_turn_id:
+          type:
+            - string
+            - "null"
+          maxLength: 200
+        proposed_by:
+          type: string
+          default: planner
+          enum: [planner, user]
+        status:
+          type: string
+          default: confirmed
+          enum: [proposed, confirmed, retracted]
+
+    RelationshipCreateBody:
+      type: object
+      properties:
+        source_topic_id:
+          type: string
+          default: ""
+          maxLength: 200
+        target_topic_id:
+          type: string
+          default: ""
+          maxLength: 200
+        label:
+          type:
+            - string
+            - "null"
+          maxLength: 120
+
+    ProjectCreateBody:
+      type: object
+      properties:
+        title:
+          type: string
+          default: ""
+
+    ProjectUpdateBody:
+      type: object
+      properties:
+        title:
+          type:
+            - string
+            - "null"
+
+    # -----------------------------------------------------------------
+    # v2 response envelopes
+    # -----------------------------------------------------------------
+
+    ListProjectsResponse:
+      type: object
+      required: [projects]
+      properties:
+        projects:
+          type: array
+          items:
+            $ref: '#/components/schemas/V2Project'
+
+    CreateProjectResponse:
+      type: object
+      required: [project]
+      properties:
+        project:
+          $ref: '#/components/schemas/V2Project'
+
+    DeleteProjectResponse:
+      type: object
+      required: [deleted, project_id]
+      properties:
+        deleted:
+          type: boolean
+        project_id:
+          type: string
+
+    SuggestionsResponse:
+      type: object
+      required: [suggestions]
+      properties:
+        suggestions:
+          type: array
+          items:
+            type: object
+            required: [title, why_this, example_idea]
+            properties:
+              title:
+                type: string
+              why_this:
+                type: string
+              example_idea:
+                type: string
+
+    KickoffRawResponse:
+      type: object
+      required:
+        - domain
+        - domain_confidence
+        - opening_card
+        - topics
+        - relationships
+        - suggested_first_topic
+        - clarifying_question_if_too_vague
+      properties:
+        domain:
+          type: string
+          enum:
+            - novel
+            - screenplay
+            - campaign
+            - event
+            - research
+            - course
+            - business_plan
+            - software_feature
+            - software_product
+            - career
+            - personal
+        domain_confidence:
+          type: string
+          enum: [high, medium, low]
+        opening_card:
+          type: object
+          required: [body]
+          properties:
+            body:
+              type: string
+        topics:
+          type: array
+          items:
+            type: object
+            required: [title, icon, why_this_topic]
+            properties:
+              title:
+                type: string
+              icon:
+                type: string
+              why_this_topic:
+                type: string
+        relationships:
+          type: array
+          items:
+            type: object
+            required: [from_topic_title, to_topic_title, label]
+            properties:
+              from_topic_title:
+                type: string
+              to_topic_title:
+                type: string
+              label:
+                type: string
+                minLength: 1
+        suggested_first_topic:
+          type: string
+        clarifying_question_if_too_vague:
+          type:
+            - string
+            - "null"
+        _sanitize:
+          type: object
+          additionalProperties: true
+
+    KickoffEnvelope:
+      type: object
+      required: [kickoff, topics, relationships]
+      properties:
+        kickoff:
+          $ref: '#/components/schemas/KickoffRawResponse'
+        topics:
+          type: array
+          items:
+            $ref: '#/components/schemas/Topic'
+        relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/Relationship'
+
+    ListTopicsResponse:
+      type: object
+      required: [topics]
+      properties:
+        topics:
+          type: array
+          items:
+            $ref: '#/components/schemas/Topic'
+
+    CreateTopicResponse:
+      type: object
+      required: [topic]
+      properties:
+        topic:
+          $ref: '#/components/schemas/Topic'
+
+    DeleteTopicResponse:
+      type: object
+      required: [deleted, topic_id]
+      properties:
+        deleted:
+          type: boolean
+        topic_id:
+          type: string
+
+    ListDecisionsResponse:
+      type: object
+      required: [decisions]
+      properties:
+        decisions:
+          type: array
+          items:
+            $ref: '#/components/schemas/Decision'
+
+    CreateDecisionResponse:
+      type: object
+      required: [decision]
+      properties:
+        decision:
+          $ref: '#/components/schemas/Decision'
+
+    DeleteDecisionResponse:
+      type: object
+      required: [deleted, decision_id]
+      properties:
+        deleted:
+          type: boolean
+        decision_id:
+          type: string
+
+    ListRelationshipsResponse:
+      type: object
+      required: [relationships]
+      properties:
+        relationships:
+          type: array
+          items:
+            $ref: '#/components/schemas/Relationship'
+
+    CreateRelationshipResponse:
+      type: object
+      required: [relationship]
+      properties:
+        relationship:
+          $ref: '#/components/schemas/Relationship'
+
+    DeleteRelationshipResponse:
+      type: object
+      required: [deleted, relationship_id]
+      properties:
+        deleted:
+          type: boolean
+        relationship_id:
+          type: string
+
+    TopicTurnResult:
+      type: object
+      required:
+        - action
+        - question
+        - why_this_matters
+        - suggested_responses
+        - proposed_decisions
+        - consistency_flags
+        - new_topic_proposal
+        - close_recommendation_reason
+      properties:
+        action:
+          type: string
+          enum: [ask, pressure_test, followup, suggest_close]
+        question:
+          type:
+            - string
+            - "null"
+        why_this_matters:
+          type:
+            - string
+            - "null"
+        suggested_responses:
+          type: array
+          maxItems: 3
+          items:
+            $ref: '#/components/schemas/SuggestedResponse'
+        proposed_decisions:
+          type: array
+          items:
+            type: object
+            required: [statement, rationale, extracted_from_turn_id]
+            properties:
+              statement:
+                type: string
+              rationale:
+                type:
+                  - string
+                  - "null"
+              extracted_from_turn_id:
+                type: string
+        consistency_flags:
+          type: array
+          items:
+            type: object
+            required: [other_topic_title, other_decision_id, description]
+            properties:
+              other_topic_title:
+                type: string
+              other_decision_id:
+                type: string
+              description:
+                type: string
+        new_topic_proposal:
+          type:
+            - object
+            - "null"
+          properties:
+            title:
+              type: string
+            icon:
+              type: string
+            why:
+              type: string
+            source_turn_id:
+              type: string
+        close_recommendation_reason:
+          type:
+            - string
+            - "null"
+        _sanitize:
+          type: object
+          additionalProperties: true
+
+    SuggestedResponse:
+      type: object
+      required: [label, intent]
+      properties:
+        label:
+          type: string
+        intent:
+          type: string
+
+    TopicTurnEnvelope:
+      type: object
+      required: [turn_result, planner_turn]
+      properties:
+        turn_result:
+          $ref: '#/components/schemas/TopicTurnResult'
+        planner_turn:
+          oneOf:
+            - $ref: '#/components/schemas/QnaTurn'
+            - type: "null"
+
+    ListTurnsResponse:
+      type: object
+      required: [turns]
+      properties:
+        turns:
+          type: array
+          items:
+            $ref: '#/components/schemas/QnaTurn'
+
+    # -----------------------------------------------------------------
+    # v1 (deprecated) — kept so existing clients keep working.
+    # -----------------------------------------------------------------
+
+    LegacyProject:
+      type: object
+      properties:
+        project_id:
+          type: string
+        title:
+          type: string
+        summary:
+          type: string
+        stage:
+          type: string
+        owner:
+          type: string
+        metadata:
+          type: object
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      deprecated: true
+
+    LegacySession:
+      type: object
+      properties:
+        session_id:
+          type: string
+        project_id:
+          type: string
+        title:
+          type: string
+        objective:
+          type: string
+        status:
+          type: string
+        transcript_path:
+          type:
+            - string
+            - "null"
+        metadata:
+          type: object
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      deprecated: true
+
+    LegacyArtifact:
+      type: object
+      properties:
+        artifact_id:
+          type: string
+        project_id:
+          type: string
+        session_id:
+          type:
+            - string
+            - "null"
+        artifact_type:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        artifact_path:
+          type:
+            - string
+            - "null"
+        metadata:
+          type: object
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+      deprecated: true
+
+    LegacyCreateSessionBody:
+      type: object
+      required: [project_id, title, objective]
+      properties:
+        project_id:
+          type: string
+          maxLength: 200
+        title:
+          type: string
+          maxLength: 200
+        objective:
+          type: string
+          maxLength: 2000
+        mode:
+          type: string
+          default: interview
+          maxLength: 40
+
+paths:
+
+  # =================================================================
+  # Meta
+  # =================================================================
+
+  /api/health:
+    get:
+      tags: [meta]
+      summary: Liveness check (trimmed payload)
+      operationId: health
+      responses:
+        '200':
+          description: Service alive
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
+
+  # =================================================================
+  # Auth
+  # =================================================================
+
+  /api/auth/signup:
+    post:
+      tags: [auth]
+      summary: Create user + sign in
+      operationId: authSignup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SignupBody'
+      responses:
+        '201':
+          description: User created; session cookie set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthedUser'
+        '409':
+          description: Email already in use
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '422':
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/login:
+    post:
+      tags: [auth]
+      summary: Verify credentials + sign in
+      operationId: authLogin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginBody'
+      responses:
+        '200':
+          description: Session cookie set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthedUser'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/logout:
+    post:
+      tags: [auth]
+      summary: Clear session cookie
+      operationId: authLogout
+      responses:
+        '200':
+          description: Session cleared
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LogoutResponse'
+
+  /api/auth/me:
+    get:
+      tags: [auth]
+      summary: Current user (falls back to system user when unauthenticated)
+      operationId: authMe
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthedUser'
+
+  /api/auth/google/start:
+    get:
+      tags: [auth]
+      summary: Begin Google OAuth flow (planned)
+      operationId: authGoogleStart
+      deprecated: false
+      responses:
+        '501':
+          description: Google OAuth not yet wired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/google/callback:
+    get:
+      tags: [auth]
+      summary: Google OAuth callback (planned)
+      operationId: authGoogleCallback
+      responses:
+        '501':
+          description: Google OAuth not yet wired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # =================================================================
+  # v2 projects
+  # =================================================================
+
+  /api/v2/projects:
+    get:
+      tags: [v2]
+      summary: List active projects for the signed-in user
+      operationId: v2ListUserProjects
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListProjectsResponse'
+    post:
+      tags: [v2]
+      summary: Create a new v2 project
+      operationId: v2CreateProject
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectCreateBody'
+      responses:
+        '201':
+          description: Project created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateProjectResponse'
+
+  /api/v2/projects/{project_id}/update:
+    post:
+      tags: [v2]
+      summary: Update a project (rename today)
+      operationId: v2UpdateProject
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectUpdateBody'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateProjectResponse'
+        '400':
+          description: No valid fields
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Project not found or not owned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v2/projects/{project_id}/delete:
+    post:
+      tags: [v2]
+      summary: Soft-delete a project (cascades to topics + relationships)
+      operationId: v2DeleteProject
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteProjectResponse'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v2/projects/suggest:
+    post:
+      tags: [v2]
+      summary: AI project suggestions for the new-project screen
+      operationId: v2SuggestProjects
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: Suggestions (empty for system user or users with <2 projects)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuggestionsResponse'
+        '429':
+          description: Daily token budget exhausted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Planner call failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v2/projects/{project_id}/kickoff:
+    post:
+      tags: [v2]
+      summary: Run the planner kickoff; persist topics + relationships
+      operationId: v2Kickoff
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/KickoffBody'
+      responses:
+        '201':
+          description: Topics + relationships persisted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KickoffEnvelope'
+        '400':
+          description: user_idea is required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Project not found or not owned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate-limited or daily budget exhausted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Planner call failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # =================================================================
+  # v2 topics
+  # =================================================================
+
+  /api/v2/projects/{project_id}/topics:
+    get:
+      tags: [v2]
+      summary: List active topics in a project
+      operationId: v2ListTopics
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListTopicsResponse'
+        '404':
+          description: Project not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    post:
+      tags: [v2]
+      summary: Create a topic manually
+      operationId: v2CreateTopic
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TopicCreateBody'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTopicResponse'
+        '400':
+          description: title is required
+        '404':
+          description: Project not found
+
+  /api/v2/topics/{topic_id}/update:
+    post:
+      tags: [v2]
+      summary: Update a topic (partial)
+      operationId: v2UpdateTopic
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/TopicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TopicUpdateBody'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateTopicResponse'
+        '400':
+          description: No valid fields
+        '404':
+          description: Topic not found
+
+  /api/v2/topics/{topic_id}/delete:
+    post:
+      tags: [v2]
+      summary: Soft-delete a topic (cascades to touching relationships)
+      operationId: v2DeleteTopic
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/TopicId'
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteTopicResponse'
+        '404':
+          description: Topic not found
+
+  # =================================================================
+  # v2 decisions
+  # =================================================================
+
+  /api/v2/topics/{topic_id}/decisions:
+    get:
+      tags: [v2]
+      summary: List non-retracted decisions on a topic
+      operationId: v2ListTopicDecisions
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/TopicId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDecisionsResponse'
+        '404':
+          description: Topic not found
+    post:
+      tags: [v2]
+      summary: Create a decision on a topic
+      operationId: v2CreateDecision
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/TopicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DecisionCreateBody'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDecisionResponse'
+        '400':
+          description: statement is required
+        '404':
+          description: Topic not found
+
+  /api/v2/projects/{project_id}/decisions:
+    get:
+      tags: [v2]
+      summary: List all non-retracted decisions across a project
+      operationId: v2ListProjectDecisions
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListDecisionsResponse'
+        '404':
+          description: Project not found
+
+  /api/v2/decisions/{decision_id}/delete:
+    post:
+      tags: [v2]
+      summary: Retract a decision (soft-delete via status flip)
+      operationId: v2DeleteDecision
+      security:
+        - sessionCookie: []
+      parameters:
+        - in: path
+          name: decision_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteDecisionResponse'
+        '404':
+          description: Decision not found or already retracted
+
+  # =================================================================
+  # v2 relationships
+  # =================================================================
+
+  /api/v2/projects/{project_id}/relationships:
+    get:
+      tags: [v2]
+      summary: List active relationships in a project
+      operationId: v2ListRelationships
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListRelationshipsResponse'
+        '404':
+          description: Project not found
+    post:
+      tags: [v2]
+      summary: Create a user-drawn relationship
+      operationId: v2CreateRelationship
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/ProjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RelationshipCreateBody'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateRelationshipResponse'
+        '400':
+          description: Missing endpoints or self-loop
+        '404':
+          description: Project or topic not found
+
+  /api/v2/relationships/{relationship_id}/delete:
+    post:
+      tags: [v2]
+      summary: Soft-delete a relationship
+      operationId: v2DeleteRelationship
+      security:
+        - sessionCookie: []
+      parameters:
+        - in: path
+          name: relationship_id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteRelationshipResponse'
+        '404':
+          description: Relationship not found
+
+  # =================================================================
+  # v2 Q&A turns
+  # =================================================================
+
+  /api/v2/topics/{topic_id}/turn:
+    post:
+      tags: [v2]
+      summary: Run one planner turn; persist the user answer + planner question
+      operationId: v2TopicTurn
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/TopicId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TopicTurnBody'
+      responses:
+        '201':
+          description: Turn persisted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopicTurnEnvelope'
+        '404':
+          description: Topic not found
+        '429':
+          description: Rate-limited or daily budget exhausted
+        '500':
+          description: Planner call failed
+
+  /api/v2/topics/{topic_id}/turns:
+    get:
+      tags: [v2]
+      summary: List all Q&A turns on a topic
+      operationId: v2ListTurns
+      security:
+        - sessionCookie: []
+      parameters:
+        - $ref: '#/components/parameters/TopicId'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListTurnsResponse'
+        '404':
+          description: Topic not found
+
+  # =================================================================
+  # v1 (deprecated)
+  # =================================================================
+
+  /api/projects:
+    get:
+      tags: [v1]
+      deprecated: true
+      summary: List legacy v1 projects
+      operationId: v1ListProjects
+      security:
+        - sessionCookie: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LegacyProject'
+
+  /api/sessions:
+    get:
+      tags: [v1]
+      deprecated: true
+      summary: List legacy v1 sessions
+      operationId: v1ListSessions
+      security:
+        - sessionCookie: []
+      parameters:
+        - in: query
+          name: project_id
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sessions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LegacySession'
+    post:
+      tags: [v1]
+      deprecated: true
+      summary: Create a legacy v1 session + transcript file
+      operationId: v1CreateSession
+      security:
+        - sessionCookie: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LegacyCreateSessionBody'
+      responses:
+        '201':
+          description: Session created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  session:
+                    $ref: '#/components/schemas/LegacySession'
+        '400':
+          description: project_id, title, objective required
+
+  /api/artifacts:
+    get:
+      tags: [v1]
+      deprecated: true
+      summary: List legacy v1 artifacts
+      operationId: v1ListArtifacts
+      security:
+        - sessionCookie: []
+      parameters:
+        - in: query
+          name: project_id
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  artifacts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/LegacyArtifact'

@@ -1,0 +1,129 @@
+version: 2
+
+updates:
+  # Web app — React/Vite frontend.
+  - package-ecosystem: "npm"
+    directory: "/app"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "area:app"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    # vite v8+ drops peer support for vite-plugin-pwa@1.x. Until the PWA
+    # plugin publishes a v8-compatible release, pin the whole vite-adjacent
+    # toolchain so dependabot doesn't keep re-proposing the broken upgrade
+    # every week. @vitejs/plugin-react v6 also requires vite v8 — same
+    # blocker. Revisit all four together when vite-plugin-pwa >= 2.0 ships.
+    ignore:
+      - dependency-name: "vite"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "@vitejs/plugin-react"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "vite-plugin-pwa"
+        update-types:
+          - "version-update:semver-major"
+      - dependency-name: "vitest"
+        update-types:
+          - "version-update:semver-major"
+    groups:
+      # Minor + patch updates keep landing as one batched PR per week.
+      # CI still runs the full gate on them; nothing here auto-merges.
+      app-minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+      # Prior incident (apr 2026): a single `app-major` PR contained 3-5
+      # bumped packages. When Vite v8 + @vitejs/plugin-react v6 landed
+      # together with unrelated deps, rollback required manually splitting
+      # the MR and re-pinning. We split the toolchain from everything else
+      # so a Vite-ecosystem break can't drag unrelated upgrades with it.
+      #
+      # `vite-toolchain-major` groups Vite itself, its React plugin, the
+      # PWA plugin, and Vitest — all of which must release together. The
+      # `ignore` block above keeps major bumps for these packages OUT of
+      # dependabot entirely for now, so this group is mostly a
+      # documentation placeholder: if we un-ignore one of these, its
+      # major PR opens alone, not bundled into `app-major-safe`.
+      vite-toolchain-major:
+        applies-to: version-updates
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+          - "vite-plugin-*"
+          - "vitest"
+        update-types:
+          - "major"
+      # Majors for everything else land bundled — still one PR, but free
+      # of the Vite-ecosystem trap. Review is much easier when a single
+      # failing dep doesn't tangle with four others.
+      app-major-safe:
+        applies-to: version-updates
+        exclude-patterns:
+          - "vite"
+          - "@vitejs/*"
+          - "vite-plugin-*"
+          - "vitest"
+        update-types:
+          - "major"
+
+  # Backend service — Python / FastAPI.
+  - package-ecosystem: "pip"
+    directory: "/services"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "area:services"
+    commit-message:
+      prefix: "chore(deps)"
+      include: "scope"
+    groups:
+      services-minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+      services-major:
+        applies-to: version-updates
+        update-types:
+          - "major"
+
+  # GitHub Actions workflows.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "06:00"
+      timezone: "Etc/UTC"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "area:ci"
+    commit-message:
+      prefix: "chore(ci)"
+      include: "scope"
+    groups:
+      actions-minor-and-patch:
+        applies-to: version-updates
+        update-types:
+          - "minor"
+          - "patch"
+      actions-major:
+        applies-to: version-updates
+        update-types:
+          - "major"

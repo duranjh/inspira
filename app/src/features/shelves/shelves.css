@@ -1,0 +1,654 @@
+/* ============================================================================
+   Shelves — warm editorial layered view over the projects list
+   ============================================================================
+
+   Visually the shelves view reuses the same paper / cream / ink palette as
+   the projects list page, and layers ShelfRows vertically. Each row is a
+   horizontal card grid under a serif header. The Unfiled row is visually
+   subtle (no extra emphasis) — it's a catch-all, not a header feature.
+
+   Token conventions mirror projects.css: --paper/--ink/--ff-serif/etc.
+   Lifted paper surfaces use #fbf7ee cream in light mode; dark-mode overrides
+   sit in the dark-theme block at the bottom. No new colors.
+*/
+
+.shelves-view {
+  min-height: calc(100vh - 60px);
+  padding: 48px 48px 80px;
+  background-color: var(--paper);
+}
+
+.shelves-view__inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  gap: 40px;
+}
+
+/* ---- Header row ---------------------------------------------------------- */
+
+.shelves-view__header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: end;
+}
+
+.shelves-view__header-text {
+  display: grid;
+  gap: 6px;
+  max-width: 720px;
+  min-width: 0;
+}
+
+.shelves-view__title {
+  font-family: var(--ff-serif);
+  font-weight: 400;
+  font-size: 48px;
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.shelves-view__subtext {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+.shelves-view__header-actions {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.shelves-view__new-shelf-btn,
+.shelves-view__new-project-btn {
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 11px 22px;
+  border-radius: var(--radius-btn, 999px);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: transform 120ms ease, opacity 150ms ease,
+    background-color 150ms ease;
+}
+
+.shelves-view__new-shelf-btn {
+  border: 1px solid var(--paper-edge);
+  background: transparent;
+  color: var(--ink-2);
+}
+
+.shelves-view__new-shelf-btn:hover {
+  transform: translateY(-1px);
+  border-color: var(--ink-5);
+  color: var(--ink);
+}
+
+.shelves-view__new-project-btn {
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+}
+
+.shelves-view__new-project-btn:hover {
+  transform: translateY(-1px);
+}
+
+/* ---- Row stack ---------------------------------------------------------- */
+
+.shelves-view__rows {
+  display: grid;
+  gap: 28px;
+}
+
+/* ============================================================================
+   Shelf row
+   ============================================================================
+*/
+
+.shelf-row {
+  display: grid;
+  gap: 14px;
+  padding: 8px 4px;
+  border-radius: var(--radius-card, 14px);
+  transition: background-color 150ms ease, outline-color 150ms ease;
+  outline: 2px dashed transparent;
+  outline-offset: 4px;
+}
+
+/* When a project card is dragged over the row, mark the drop zone with a
+   sage dashed outline. Dark-mode override below adjusts to the dark sage
+   variable. */
+.shelf-row--dragover {
+  background-color: color-mix(in srgb, var(--sage) 6%, transparent);
+  outline-color: var(--sage);
+}
+
+.shelf-row__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 8px;
+}
+
+.shelf-row__chevron {
+  width: 24px;
+  height: 24px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  font-size: 12px;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: transform 150ms ease, color 120ms ease, background 120ms ease;
+}
+
+.shelf-row__chevron:hover,
+.shelf-row__chevron:focus-visible {
+  color: var(--ink);
+  background: var(--paper-3);
+  outline: none;
+}
+
+/* Chevron points right (collapsed) vs down (expanded). */
+.shelf-row__chevron--collapsed {
+  transform: rotate(-90deg);
+}
+
+.shelf-row__name {
+  font-family: var(--ff-serif);
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  /* i18n safety: long DE/FR shelf names truncate with ellipsis instead
+     of pushing the kebab/count off the row. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  margin: 0;
+  /* Truncate very long shelf names on a single line. */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+  max-width: 56ch;
+}
+
+.shelf-row__count {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: var(--paper-3);
+  white-space: nowrap;
+}
+
+/* ---- Kebab menu (mirrors project-card pattern) -------------------------- */
+
+.shelf-row__menu-wrap {
+  position: relative;
+  margin-left: auto;
+}
+
+.shelf-row__menu-trigger {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  color: var(--ink-3);
+  font-family: var(--ff-sans);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 120ms ease, color 120ms ease;
+}
+
+.shelf-row__menu-trigger:hover,
+.shelf-row__menu-trigger:focus-visible,
+.shelf-row__menu-trigger[aria-expanded="true"] {
+  background: var(--paper-3);
+  color: var(--ink);
+  outline: none;
+}
+
+.shelf-row__menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 160px;
+  background: var(--paper);
+  border: 1px solid var(--paper-edge);
+  border-radius: 10px;
+  padding: 4px;
+  box-shadow: 0 20px 40px -20px rgba(43, 37, 32, 0.3);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.shelf-row__menu-item {
+  text-align: left;
+  background: transparent;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: var(--ff-sans);
+  font-size: 12.5px;
+  color: var(--ink-2);
+  cursor: pointer;
+}
+
+.shelf-row__menu-item:hover,
+.shelf-row__menu-item:focus-visible {
+  background: var(--paper-2);
+  color: var(--ink);
+  outline: none;
+}
+
+.shelf-row__menu-item--danger {
+  color: var(--rust);
+}
+
+.shelf-row__menu-item--danger:hover,
+.shelf-row__menu-item--danger:focus-visible {
+  background: color-mix(in srgb, var(--rust) 10%, var(--paper));
+  color: var(--rust);
+}
+
+/* ---- Row body + grid of cards ------------------------------------------ */
+
+.shelf-row__body {
+  padding: 4px;
+}
+
+.shelf-row__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.shelf-row__card-wrap {
+  position: relative;
+  display: contents;
+}
+
+/* Wrap in a div for the sage "just moved" dot. `display: contents` keeps
+   the grid flat so minmax() still applies to the cards themselves. The
+   ::after pseudo sits on the inner ProjectCard via a wrapper below. */
+.shelf-row__card-wrap--moved .project-card {
+  position: relative;
+}
+
+.shelf-row__card-wrap--moved .project-card::after {
+  content: "";
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--sage);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--sage) 30%, transparent);
+  animation: shelf-moved-dot 1500ms ease-out forwards;
+}
+
+@keyframes shelf-moved-dot {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  70% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+}
+
+/* ---- Empty row placeholder ---------------------------------------------- */
+
+.shelf-row__empty {
+  border: 1.5px dashed var(--paper-edge);
+  border-radius: 12px;
+  padding: 28px 20px;
+  display: grid;
+  place-items: center;
+  gap: 6px;
+  background: transparent;
+}
+
+.shelf-row__empty-text {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-4);
+  margin: 0;
+}
+
+.shelf-row__empty-hint {
+  font-family: var(--ff-sans);
+  font-size: 12px;
+  color: var(--ink-4);
+  margin: 0;
+  opacity: 0.85;
+}
+
+.shelf-row--dragover .shelf-row__empty {
+  border-color: var(--sage);
+  background-color: color-mix(in srgb, var(--sage) 4%, transparent);
+}
+
+/* ---- Dark-mode overrides ------------------------------------------------ */
+
+:root[data-theme="dark"] .shelf-row__count,
+:root[data-theme="dark"] .shelf-row__menu-trigger:hover,
+:root[data-theme="dark"] .shelf-row__menu-trigger:focus-visible,
+:root[data-theme="dark"] .shelf-row__menu-trigger[aria-expanded="true"] {
+  background: #2a2218;
+}
+
+/* Modern Dark — cool-slate counterpart. The Bookworm-dark #2a2218 espresso
+   reads warm against Modern Dark's cool slate palette; flip to --paper-lifted
+   (#121824) so these surfaces track the theme. */
+:root[data-style="modern"][data-theme="dark"] .shelf-row__count,
+:root[data-style="modern"][data-theme="dark"] .shelf-row__menu-trigger:hover,
+:root[data-style="modern"][data-theme="dark"] .shelf-row__menu-trigger:focus-visible,
+:root[data-style="modern"][data-theme="dark"] .shelf-row__menu-trigger[aria-expanded="true"] {
+  background: var(--paper-lifted);
+}
+
+/* ============================================================================
+   Unfiled catch-all section
+   ============================================================================
+   Not a shelf. Plain permanent header above a project grid. Still a drop
+   target for un-shelving (drag a card out of any shelf to land it here).
+   Visual weight is deliberately lower than a ShelfRow — no kebab, no
+   collapse, no bordered empty-state card, plain static h2 instead of a
+   shelf-header chip.
+*/
+
+.shelves-view__unfiled {
+  display: grid;
+  gap: 14px;
+  padding: 8px 4px;
+  border-radius: var(--radius-card, 14px);
+  outline: 2px dashed transparent;
+  outline-offset: 4px;
+  transition: background-color 150ms ease, outline-color 150ms ease;
+}
+
+.shelves-view__unfiled--dragover {
+  background-color: color-mix(in srgb, var(--sage) 6%, transparent);
+  outline-color: var(--sage);
+}
+
+.shelves-view__unfiled-heading {
+  font-family: var(--ff-serif);
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  margin: 0;
+  padding: 0 8px;
+}
+
+.shelves-view__unfiled-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  padding: 4px;
+}
+
+/* ---- Responsive --------------------------------------------------------- */
+
+@media (max-width: 1100px) {
+  .shelves-view {
+    padding: 40px 32px 72px;
+  }
+  .shelves-view__title {
+    font-size: 42px;
+  }
+}
+
+@media (max-width: 900px) {
+  .shelves-view {
+    padding: 32px 24px 64px;
+  }
+  .shelf-row__grid,
+  .shelves-view__unfiled-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .shelves-view__header {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .shelves-view__header-actions {
+    justify-self: start;
+  }
+  .shelves-view__title {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 640px) {
+  .shelves-view {
+    padding: 24px 16px 56px;
+  }
+  .shelves-view__title {
+    font-size: 30px;
+    letter-spacing: -0.01em;
+  }
+  .shelves-view__subtext {
+    font-size: 14px;
+  }
+  .shelf-row__grid,
+  .shelves-view__unfiled-grid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  .shelf-row__name,
+  .shelves-view__unfiled-heading {
+    font-size: 20px;
+  }
+}
+
+/* ============================================================================
+   Mobile responsive additions — phones (≤520px) and tablets (≤820px)
+   Appended after all desktop rules. Existing rules above are untouched.
+   ============================================================================ */
+
+/* ---- 768px: portrait tablets — header stacks, kebab keeps right edge ---- */
+@media (max-width: 768px) {
+  .shelves-view {
+    padding: 32px 22px 64px;
+  }
+  .shelves-view__title {
+    font-size: 34px;
+  }
+  /* Header already collapses to one column at 900px; here, soften the
+     action group so primary/secondary CTAs can wrap if needed. */
+  .shelves-view__header-actions {
+    flex-wrap: wrap;
+  }
+  .shelves-view__new-shelf-btn,
+  .shelves-view__new-project-btn {
+    padding: 11px 18px;
+  }
+  /* Card grid: tighter min so 2 cards fit cleanly on portrait tablet. */
+  .shelf-row__grid,
+  .shelves-view__unfiled-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+  }
+  /* Shelf row header: cap shelf name so the kebab/count never push out. */
+  .shelf-row__name {
+    max-width: 32ch;
+  }
+  /* Bump the kebab trigger toward a 44px tap target on touch devices. */
+  .shelf-row__menu-trigger {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* ---- 820px: light tablet tightening ---- */
+@media (max-width: 820px) {
+  .shelves-view {
+    padding: 36px 28px 68px;
+  }
+  .shelf-row__grid,
+  .shelves-view__unfiled-grid {
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  }
+}
+
+/* ---- 520px: phones — stack header actions, single-column card grid ---- */
+@media (max-width: 520px) {
+  .shelves-view {
+    padding: 20px 14px 52px;
+  }
+  .shelves-view__title {
+    font-size: 26px;
+    letter-spacing: -0.01em;
+  }
+
+  /* Stack "New shelf" + "New project" vertically so they don't overflow on a
+     390px screen and remain easy one-thumb targets. */
+  .shelves-view__header-actions {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 8px;
+  }
+  .shelves-view__new-shelf-btn,
+  .shelves-view__new-project-btn {
+    width: 100%;
+    text-align: center;
+    justify-content: center;
+  }
+
+  .shelf-row__grid,
+  .shelves-view__unfiled-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .shelf-row__name,
+  .shelves-view__unfiled-heading {
+    font-size: 18px;
+  }
+}
+
+/* ---- 480px: small phones (incl. 375px) — comfortable tap targets,
+       guarded kebab menu, no horizontal overflow ---- */
+@media (max-width: 480px) {
+  .shelves-view {
+    padding: 16px 12px 48px;
+  }
+  .shelves-view__title {
+    font-size: 24px;
+  }
+  .shelves-view__inner {
+    gap: 28px;
+  }
+  .shelves-view__rows {
+    gap: 22px;
+  }
+  /* Shelf row header: keep chevron + name + count + kebab on one row but
+     allow the name to truncate aggressively rather than wrap. */
+  .shelf-row__header {
+    gap: 8px;
+    padding: 0 4px;
+  }
+  .shelf-row__name {
+    max-width: 16ch;
+    font-size: 17px;
+  }
+  /* Tap targets: chevron + kebab grow to ~40-44px without changing visual
+     weight at desktop sizes. */
+  .shelf-row__chevron {
+    width: 32px;
+    height: 32px;
+  }
+  .shelf-row__menu-trigger {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+  /* Kebab dropdown: prevent it from spilling off the viewport on 375px.
+     Cap min-width and let the menu shrink with the row instead of forcing
+     a 160px box. */
+  .shelf-row__menu {
+    min-width: 140px;
+    max-width: calc(100vw - 32px);
+  }
+  .shelf-row__menu-item {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  /* Card grid + unfiled: a hair tighter to use every pixel on 375px. */
+  .shelf-row__grid,
+  .shelves-view__unfiled-grid {
+    gap: 10px;
+  }
+  .shelf-row__body,
+  .shelves-view__unfiled-grid {
+    padding: 2px;
+  }
+  /* Empty-state placeholder: shorter so it doesn't dominate the screen. */
+  .shelf-row__empty {
+    padding: 20px 14px;
+  }
+  .shelves-view__unfiled-heading {
+    font-size: 17px;
+    padding: 0 4px;
+  }
+}
+
+/* ---- Reduced motion ----------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .shelf-row,
+  .shelf-row__chevron,
+  .shelves-view__new-shelf-btn,
+  .shelves-view__new-project-btn {
+    transition: none;
+  }
+  .shelf-row__chevron--collapsed {
+    /* Still rotate for the visual cue, but skip the easing transition. */
+    transform: rotate(-90deg);
+  }
+  .shelf-row__card-wrap--moved .project-card::after {
+    animation: none;
+    /* Hold the dot for the full TTL rather than animating it out — the
+       component still clears the class from state after MOVED_DOT_TTL_MS. */
+    opacity: 1;
+  }
+  .shelves-view__new-shelf-btn:hover,
+  .shelves-view__new-project-btn:hover {
+    transform: none;
+  }
+}

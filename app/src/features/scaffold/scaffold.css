@@ -1,0 +1,339 @@
+/* Code-scaffold feature — paid-tier "generate a first draft" flow. */
+
+/* Mirrors the warm-editorial vocabulary the rest of the app uses: sage
+   pills, paper cards, serif status italics. No new tokens — every
+   color here is a CSS var the rest of the app already defines. */
+
+/* ----- ScaffoldButton: sage-bordered pill under the summary body ---- */
+
+.scaffold-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+  padding: 0.55rem 1.2rem;
+  border-radius: var(--radius-btn, 999px);
+  border: 1px solid var(--sage, #8b9e82);
+  background: var(--paper-warmer, #f6f1e5);
+  color: var(--ink, #1a1a1a);
+  font: 500 0.95rem/1.2 var(--font-serif, Georgia, serif);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease;
+}
+
+.scaffold-cta:hover:not(:disabled) {
+  background: var(--paper, #faf6ec);
+  border-color: var(--sage-deep, #6f8668);
+}
+
+.scaffold-cta:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.scaffold-cta__cost {
+  font-size: 0.85rem;
+  color: var(--ink-soft, #555);
+  font-weight: 400;
+}
+
+/* ----- ScaffoldProgress: skeleton file tree + italic status -------- */
+
+.scaffold-progress {
+  margin-top: 1.25rem;
+  padding: 1.1rem 1.25rem 1.25rem;
+  border: 1px solid var(--paper-edge, #e7e0cd);
+  border-radius: 10px;
+  background: var(--paper-warmer, #f6f1e5);
+}
+
+.scaffold-progress__status {
+  margin: 0 0 0.8rem;
+  font: italic 400 0.95rem/1.3 var(--font-serif, Georgia, serif);
+  color: var(--ink-soft, #555);
+}
+
+.scaffold-progress__tree {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.scaffold-progress__file {
+  height: 0.85rem;
+  margin: 0.35rem 0;
+  background: linear-gradient(
+    90deg,
+    var(--paper-edge, #e7e0cd) 0%,
+    var(--paper, #faf6ec) 50%,
+    var(--paper-edge, #e7e0cd) 100%
+  );
+  background-size: 200% 100%;
+  border-radius: 4px;
+  animation: scaffold-shimmer 1.8s ease-in-out infinite;
+}
+
+@keyframes scaffold-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scaffold-progress__file {
+    animation: none;
+  }
+}
+
+/* ----- ScaffoldResult: tree + download ---------------------------- */
+
+.scaffold-result {
+  margin-top: 1.25rem;
+  border: 1px solid var(--paper-edge, #e7e0cd);
+  border-radius: 10px;
+  background: var(--paper-warmer, #f6f1e5);
+  display: grid;
+  grid-template-columns: 1fr minmax(220px, 280px);
+  gap: 1rem;
+  padding: 1rem 1.25rem 1.25rem;
+}
+
+@media (max-width: 720px) {
+  .scaffold-result {
+    grid-template-columns: 1fr;
+  }
+}
+
+.scaffold-result__header {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.scaffold-result__title {
+  margin: 0;
+  font: 600 1.05rem/1.3 var(--font-serif, Georgia, serif);
+}
+
+.scaffold-result__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.6rem;
+  border-radius: var(--radius-btn, 999px);
+  background: var(--sage-tint, #e4ecd8);
+  color: var(--sage-ink, #354730);
+  font: 500 0.78rem/1 var(--font-sans, system-ui, sans-serif);
+  letter-spacing: 0.02em;
+}
+
+.scaffold-result__truncation {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--rust, #b66c45);
+  background: var(--paper, #faf6ec);
+  font: italic 400 0.9rem/1.35 var(--font-serif, Georgia, serif);
+  color: var(--ink-soft, #555);
+}
+
+.scaffold-result__tree {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-height: 340px;
+  overflow-y: auto;
+  border: 1px solid var(--paper-edge, #e7e0cd);
+  border-radius: 6px;
+  background: var(--paper, #faf6ec);
+  font: 400 0.88rem/1.45 var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+}
+
+.scaffold-result__tree li {
+  padding: 0.25rem 0.7rem;
+  border-bottom: 1px solid var(--paper-edge, #e7e0cd);
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.scaffold-result__tree li:last-child {
+  border-bottom: none;
+}
+
+.scaffold-result__tree-size {
+  color: var(--ink-soft, #555);
+  font-size: 0.78rem;
+}
+
+.scaffold-result__side {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.scaffold-result__download {
+  padding: 0.7rem 1.1rem;
+  border-radius: var(--radius-btn, 999px);
+  border: 1px solid var(--sage-deep, #6f8668);
+  background: var(--sage, #8b9e82);
+  color: var(--paper, #faf6ec);
+  font: 600 0.95rem/1.1 var(--font-serif, Georgia, serif);
+  cursor: pointer;
+  transition: background-color 120ms ease;
+}
+
+.scaffold-result__download:hover {
+  background: var(--sage-deep, #6f8668);
+}
+
+.scaffold-result__regen {
+  padding: 0.55rem 1.1rem;
+  border-radius: var(--radius-btn, 999px);
+  border: 1px solid var(--paper-edge, #e7e0cd);
+  background: transparent;
+  color: var(--ink, #1a1a1a);
+  font: 500 0.9rem/1.1 var(--font-serif, Georgia, serif);
+  cursor: pointer;
+}
+
+.scaffold-result__regen:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.scaffold-result__post {
+  margin: 0;
+  padding: 0.6rem 0.75rem;
+  border-radius: 6px;
+  background: var(--paper, #faf6ec);
+  font: 400 0.82rem/1.45 var(--font-mono, ui-monospace, SFMono-Regular, monospace);
+  white-space: pre-wrap;
+}
+
+.scaffold-result__post-label {
+  font: italic 500 0.78rem/1 var(--font-serif, Georgia, serif);
+  color: var(--ink-soft, #555);
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.scaffold-result__preview {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  background: var(--paper, #faf6ec);
+  border: 1px solid var(--paper-edge, #e7e0cd);
+  border-radius: 6px;
+  font: italic 400 0.88rem/1.4 var(--font-serif, Georgia, serif);
+  color: var(--ink-soft, #555);
+}
+
+/* ----- CreditMeter: small pill in the user menu ------------------- */
+
+.credit-meter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.7rem;
+  border-radius: var(--radius-btn, 999px);
+  border: 1px solid var(--paper-edge, #e7e0cd);
+  background: var(--paper, #faf6ec);
+  color: var(--ink, #1a1a1a);
+  font: 500 0.82rem/1 var(--font-serif, Georgia, serif);
+  cursor: pointer;
+}
+
+.credit-meter:hover {
+  background: var(--paper-warmer, #f6f1e5);
+}
+
+.credit-meter--empty {
+  border-color: var(--rust, #b66c45);
+  color: var(--rust, #b66c45);
+}
+
+.credit-meter__count {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ----- BuyCreditsDialog body ------------------------------------- */
+
+.buy-credits__packs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 0.5rem;
+}
+
+.buy-credits__pack {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--paper-edge, #e7e0cd);
+  border-radius: 8px;
+  background: var(--paper, #faf6ec);
+  cursor: pointer;
+  font: 500 0.95rem/1.3 var(--font-serif, Georgia, serif);
+  text-align: left;
+}
+
+.buy-credits__pack:hover {
+  background: var(--paper-warmer, #f6f1e5);
+  border-color: var(--sage-deep, #6f8668);
+}
+
+.buy-credits__pack-price {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-soft, #555);
+}
+
+.buy-credits__hint {
+  margin: 0.9rem 0 0;
+  font: italic 400 0.85rem/1.4 var(--font-serif, Georgia, serif);
+  color: var(--ink-soft, #555);
+}
+
+.buy-credits__error {
+  margin: 0.75rem 0 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid var(--rust, #b66c45);
+  background: var(--paper, #faf6ec);
+  color: var(--rust, #b66c45);
+  font: 500 0.85rem/1.35 var(--font-sans, system-ui, sans-serif);
+}
+
+/* ============================================================================
+   Mobile responsive additions — phones (≤520px)
+   Appended after all existing rules. The ≤720px block above is untouched.
+   ============================================================================ */
+
+/* ---- 520px: phones — full-width download/regen buttons, smaller tree ---- */
+@media (max-width: 520px) {
+  /* ScaffoldResult two-column grid already collapses to 1-col at ≤720px.
+     Extra tightening below for the narrow side. */
+  .scaffold-result {
+    padding: 0.75rem 0.9rem 1rem;
+    gap: 0.75rem;
+  }
+  /* Download + regen: stretch to full width for easy tapping. */
+  .scaffold-result__download,
+  .scaffold-result__regen {
+    width: 100%;
+    text-align: center;
+  }
+  /* Credit-meter inside user menu: no changes needed; pill is compact. */
+  /* Buy-credits packs: ensure price and label wrap gracefully. */
+  .buy-credits__pack {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}

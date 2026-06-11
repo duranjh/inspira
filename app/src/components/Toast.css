@@ -1,0 +1,346 @@
+/* ============================================================================
+   Inspira — toast + error-boundary styles
+   ============================================================================
+
+   Tokens come from App.css (:root). We only define layout and motion here.
+   Toasts read like a small paper note slipped onto your desk: cream card,
+   left accent border, quiet shadow, serif heading in the fallback UI.
+   ---------------------------------------------------------------------------- */
+
+.inspira-toast-stack {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 2147483600;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-end;
+  pointer-events: none;
+  max-width: min(380px, calc(100vw - 40px));
+}
+
+.inspira-toast {
+  pointer-events: auto;
+  position: relative;
+  min-width: 260px;
+  max-width: 380px;
+  padding: 12px 14px 12px 16px;
+  background: #fbf7ee;
+  color: var(--ink);
+  border: 1px solid var(--paper-edge);
+  border-left-width: 4px;
+  border-radius: 6px;
+  box-shadow:
+    0 1px 2px rgba(43, 37, 32, 0.06),
+    0 6px 18px rgba(43, 37, 32, 0.08);
+  font-family: var(--ff-sans);
+  font-size: 13.5px;
+  line-height: 1.45;
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  cursor: pointer;
+  animation: inspira-toast-in 220ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition: opacity 180ms ease, transform 180ms ease;
+  will-change: transform, opacity;
+}
+
+:root[data-theme="dark"] .inspira-toast {
+  background: #2a2218;
+}
+
+/* Modern Dark — cool-slate counterpart. */
+:root[data-style="modern"][data-theme="dark"] .inspira-toast {
+  background: var(--paper-lifted);
+}
+
+.inspira-toast--info {
+  border-left-color: var(--ink-3);
+}
+.inspira-toast--success {
+  border-left-color: var(--sage);
+}
+.inspira-toast--warning {
+  border-left-color: var(--gold);
+}
+.inspira-toast--error {
+  border-left-color: var(--rust);
+}
+
+.inspira-toast--leaving {
+  opacity: 0;
+  transform: translateY(6px);
+}
+
+.inspira-toast__glyph {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1;
+  color: #fbf7ee;
+  user-select: none;
+}
+
+:root[data-theme="dark"] .inspira-toast__glyph {
+  color: #2a2218;
+}
+
+/* Modern Dark — glyph text reads against the accent-filled background, so
+   use the cool-slate paper tone instead of espresso for legibility. */
+:root[data-style="modern"][data-theme="dark"] .inspira-toast__glyph {
+  color: var(--paper);
+}
+
+.inspira-toast--info .inspira-toast__glyph {
+  background: var(--ink-3);
+}
+.inspira-toast--success .inspira-toast__glyph {
+  background: var(--sage);
+}
+.inspira-toast--warning .inspira-toast__glyph {
+  background: var(--gold);
+}
+.inspira-toast--error .inspira-toast__glyph {
+  background: var(--rust);
+}
+
+.inspira-toast__body {
+  flex: 1 1 auto;
+  min-width: 0;
+  color: var(--ink);
+}
+
+.inspira-toast__title {
+  font-weight: 500;
+  font-size: 13.5px;
+  color: var(--ink);
+  margin: 0 0 2px;
+}
+
+.inspira-toast__message {
+  color: var(--ink-2);
+  word-wrap: break-word;
+}
+
+.inspira-toast__action {
+  flex: 0 0 auto;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--ink);
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 4px 8px;
+  margin: -2px 4px 0 0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 120ms ease, background 120ms ease;
+}
+
+.inspira-toast__action:hover {
+  background: rgba(43, 37, 32, 0.08);
+}
+
+.inspira-toast__close {
+  flex: 0 0 auto;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: var(--ink-3);
+  font-family: var(--ff-sans);
+  font-size: 16px;
+  line-height: 1;
+  padding: 2px 6px;
+  margin: -2px -4px 0 0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: color 120ms ease, background 120ms ease;
+}
+
+.inspira-toast__close:hover {
+  color: var(--ink);
+  background: rgba(43, 37, 32, 0.06);
+}
+
+@keyframes inspira-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inspira-toast {
+    animation: none;
+    transition: opacity 120ms ease;
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   ErrorBoundary — warm editorial fallback
+   ---------------------------------------------------------------------------- */
+
+.inspira-boundary {
+  min-height: 100vh;
+  width: 100%;
+  background: var(--paper);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  box-sizing: border-box;
+  font-family: var(--ff-sans);
+}
+
+.inspira-boundary__inner {
+  max-width: 560px;
+  width: 100%;
+  background: #fbf7ee;
+  border: 1px solid var(--paper-edge);
+  border-radius: 8px;
+  padding: 36px 40px 32px;
+  box-shadow:
+    0 1px 2px rgba(43, 37, 32, 0.04),
+    0 10px 32px rgba(43, 37, 32, 0.06);
+}
+
+:root[data-theme="dark"] .inspira-boundary__inner {
+  background: #2a2218;
+}
+
+/* Modern Dark — cool-slate counterpart. */
+:root[data-style="modern"][data-theme="dark"] .inspira-boundary__inner {
+  background: var(--paper-lifted);
+}
+
+.inspira-boundary__eyebrow {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 14px;
+}
+
+.inspira-boundary__heading {
+  font-family: var(--ff-serif);
+  font-weight: 400;
+  font-size: 28px;
+  line-height: 1.2;
+  color: var(--ink);
+  margin: 0 0 14px;
+  letter-spacing: -0.01em;
+}
+
+.inspira-boundary__body {
+  color: var(--ink-2);
+  font-size: 15px;
+  line-height: 1.55;
+  margin: 0 0 18px;
+}
+
+.inspira-boundary__message {
+  font-family: var(--ff-mono);
+  font-size: 12.5px;
+  color: var(--ink-2);
+  background: var(--paper-2);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  padding: 10px 12px;
+  margin: 0 0 22px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.inspira-boundary__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.inspira-boundary__btn {
+  appearance: none;
+  font-family: var(--ff-sans);
+  font-size: 13.5px;
+  font-weight: 500;
+  padding: 9px 16px;
+  border-radius: var(--radius-btn, 999px);
+  border: 1px solid var(--paper-edge);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease,
+    color 120ms ease, transform 80ms ease;
+}
+
+.inspira-boundary__btn:hover {
+  background: var(--paper-2);
+  border-color: var(--ink-4);
+}
+
+.inspira-boundary__btn:active {
+  transform: translateY(1px);
+}
+
+.inspira-boundary__btn--primary {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.inspira-boundary__btn--primary:hover {
+  background: var(--ink-2);
+  border-color: var(--ink-2);
+  color: var(--paper);
+}
+
+/* "Technical details" collapsible — hidden by default, visible on open */
+
+.inspira-boundary__details {
+  margin-top: 20px;
+}
+
+.inspira-boundary__details-summary {
+  font-family: var(--ff-sans);
+  font-size: 12.5px;
+  color: var(--ink-3);
+  cursor: pointer;
+  user-select: none;
+  list-style: none; /* remove browser arrow in some browsers */
+}
+
+.inspira-boundary__details-summary::-webkit-details-marker {
+  display: none;
+}
+
+.inspira-boundary__details-summary::before {
+  content: "▸ ";
+  font-size: 10px;
+  vertical-align: 1px;
+}
+
+.inspira-boundary__details[open] .inspira-boundary__details-summary::before {
+  content: "▾ ";
+}
+
+.inspira-boundary__details .inspira-boundary__message {
+  margin: 8px 0 0;
+}

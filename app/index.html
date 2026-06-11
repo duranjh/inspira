@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+    <!-- Canonical / hreflang -------------------------------------------- -->
+    <link rel="canonical" href="https://tryinspira.com/" />
+    <link rel="alternate" hreflang="en" href="https://tryinspira.com/" />
+    <link rel="alternate" hreflang="es" href="https://tryinspira.com/?lang=es" />
+    <link rel="alternate" hreflang="pt" href="https://tryinspira.com/?lang=pt" />
+    <link rel="alternate" hreflang="fr" href="https://tryinspira.com/?lang=fr" />
+    <link rel="alternate" hreflang="it" href="https://tryinspira.com/?lang=it" />
+    <link rel="alternate" hreflang="de" href="https://tryinspira.com/?lang=de" />
+    <link rel="alternate" hreflang="nl" href="https://tryinspira.com/?lang=nl" />
+    <link rel="alternate" hreflang="pl" href="https://tryinspira.com/?lang=pl" />
+    <link rel="alternate" hreflang="ja" href="https://tryinspira.com/?lang=ja" />
+    <link rel="alternate" hreflang="x-default" href="https://tryinspira.com/" />
+
+    <!-- Title / description ------------------------------------------- -->
+    <title>Inspira — From feedback to features.</title>
+    <meta
+      name="description"
+      content="Drop in your customer feedback. Inspira ships the work — engineering starts each morning with features ready to build, not requirements to gather."
+    />
+    <meta
+      name="keywords"
+      content="customer feedback, feature triage, AI teammate, engineering velocity, repo-aware, cross-project consistency, Inspira"
+    />
+    <meta name="author" content="Inspira" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <!-- Favicons / PWA ------------------------------------------------- -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" sizes="16x16" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" sizes="32x32" href="/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" sizes="192x192" href="/icon-192.svg" />
+    <link rel="icon" type="image/svg+xml" sizes="512x512" href="/icon-512.svg" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.svg" />
+    <link rel="mask-icon" href="/favicon.svg" color="#568868" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Theme ---------------------------------------------------------- -->
+    <meta name="theme-color" content="#F5F0E6" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#2B2520" media="(prefers-color-scheme: dark)" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Inspira" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- Open Graph ----------------------------------------------------- -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://tryinspira.com/" />
+    <meta property="og:site_name" content="Inspira" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="es_ES" />
+    <meta property="og:locale:alternate" content="pt_BR" />
+    <meta property="og:locale:alternate" content="fr_FR" />
+    <meta property="og:locale:alternate" content="it_IT" />
+    <meta property="og:locale:alternate" content="de_DE" />
+    <meta property="og:locale:alternate" content="nl_NL" />
+    <meta property="og:locale:alternate" content="pl_PL" />
+    <meta property="og:locale:alternate" content="ja_JP" />
+    <meta property="og:title" content="Inspira — From feedback to features." />
+    <meta
+      property="og:description"
+      content="Customer feedback in. Inspira ships the work. Engineering starts each morning with features ready to build."
+    />
+    <!-- PNG first for LinkedIn/Slack parity; SVG second for modern platforms. -->
+    <meta property="og:image" content="https://tryinspira.com/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Inspira wordmark on warm cream paper with a sage accent dot and the tagline 'From feedback to features.'" />
+    <meta property="og:image" content="https://tryinspira.com/og-image.svg" />
+    <meta property="og:image:type" content="image/svg+xml" />
+
+    <!-- Twitter card --------------------------------------------------- -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@tryinspira" />
+    <meta name="twitter:creator" content="@tryinspira" />
+    <meta name="twitter:title" content="Inspira — From feedback to features." />
+    <meta
+      name="twitter:description"
+      content="Customer feedback in. Inspira ships the work."
+    />
+    <meta name="twitter:image" content="https://tryinspira.com/og-image.png" />
+    <meta name="twitter:image:alt" content="Inspira wordmark on warm cream paper with a sage accent dot." />
+
+    <!-- Schema.org structured data (SoftwareApplication) ---------------- -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "Inspira",
+        "url": "https://tryinspira.com/",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "description": "Customer feedback in. Inspira ships the work — features ready to build for engineering teams.",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        }
+      }
+    </script>
+
+    <!-- Static first-paint hero ----------------------------------------- -->
+    <!-- Inlined so partners landing cold see the v5 framing in <500ms     -->
+    <!-- instead of staring at a blank <div id="root"> while the 1.8MB JS  -->
+    <!-- bundle parses. React's createRoot().render() replaces these       -->
+    <!-- children when it mounts; no hydration mismatch (no SSR).          -->
+    <!-- Crawlers read this content directly for SEO.                       -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #f5f0e6;
+        color: #2b2520;
+        font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+      }
+      @media (prefers-color-scheme: dark) {
+        html,
+        body {
+          background: #2b2520;
+          color: #f5f0e6;
+        }
+      }
+      .static-hero {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        box-sizing: border-box;
+      }
+      .static-hero__eyebrow {
+        font-family: "JetBrains Mono", "IBM Plex Mono", ui-monospace, monospace;
+        font-size: 0.8125rem;
+        letter-spacing: 0.2em;
+        color: #847b72;
+        text-transform: uppercase;
+        margin: 0 0 1.5rem;
+      }
+      .static-hero__title {
+        font-size: clamp(2rem, 5vw, 3.75rem);
+        font-weight: 400;
+        font-style: italic;
+        line-height: 1.15;
+        margin: 0 0 1.25rem;
+        max-width: 900px;
+      }
+      .static-hero__dot {
+        display: inline-block;
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: #6a9a7a;
+        margin-right: 0.625rem;
+        vertical-align: middle;
+        position: relative;
+        top: -0.4em;
+      }
+      .static-hero__subline {
+        font-size: clamp(1.0625rem, 1.75vw, 1.375rem);
+        color: #4a4038;
+        line-height: 1.5;
+        max-width: 680px;
+        margin: 0;
+      }
+      @media (prefers-color-scheme: dark) {
+        .static-hero__eyebrow {
+          color: #b8ad9f;
+        }
+        .static-hero__subline {
+          color: #d4c8b8;
+        }
+      }
+    </style>
+    <script type="module" src="/src/main.tsx"></script>
+  </head>
+  <body>
+    <div id="root">
+      <div class="static-hero">
+        <p class="static-hero__eyebrow">From feedback to features</p>
+        <h1 class="static-hero__title"><span class="static-hero__dot"></span>Customer feedback in. Inspira ships the work.</h1>
+        <p class="static-hero__subline">Drop your customer feedback in. Inspira reads it, groups the issues, and plans the work.</p>
+      </div>
+    </div>
+  </body>
+</html>

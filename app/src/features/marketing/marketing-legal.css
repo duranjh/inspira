@@ -1,0 +1,480 @@
+/* ============================================================================
+   Inspira — legal pages + supporting marketing surfaces.
+   ============================================================================
+
+   Scoped under `.marketing-legal` so these rules never leak into the rest
+   of the marketing surface. The renderMarkdown helper emits bare HTML
+   tags (h1/h2/h3/p/ul/li/blockquote/pre/hr), and those are shaped here.
+   All colour / type tokens come from App.css's :root.
+*/
+
+.marketing-legal {
+  max-width: 62ch;
+  margin: 0 auto;
+  padding: 56px 24px 80px;
+}
+
+.marketing-legal__eyebrow {
+  font-family: var(--ff-mono, ui-monospace, monospace);
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 12px;
+}
+
+.marketing-legal__title {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 44px;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0 0 4px;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+}
+
+.marketing-legal__updated {
+  font-size: 13px;
+  color: var(--ink-4);
+  margin: 0 0 32px;
+  font-family: var(--ff-mono, ui-monospace, monospace);
+}
+
+.marketing-legal__body h1 {
+  /* The renderer may emit an H1 from the source .md. Downrank it so the
+     page's own H1 (above) stays dominant. */
+  font-family: var(--ff-serif, Georgia, serif);
+  font-weight: 500;
+  font-size: 26px;
+  color: var(--ink);
+  margin: 44px 0 12px;
+  letter-spacing: -0.005em;
+}
+
+.marketing-legal__body h2 {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-weight: 500;
+  font-size: 22px;
+  color: var(--ink);
+  margin: 40px 0 10px;
+  letter-spacing: -0.005em;
+}
+
+.marketing-legal__body h3 {
+  font-family: var(--ff-sans, system-ui, sans-serif);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--ink);
+  margin: 24px 0 8px;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+.marketing-legal__body p,
+.marketing-legal__body li {
+  color: var(--ink-2);
+  font-family: var(--ff-serif, Georgia, serif);
+  font-size: 17px;
+  line-height: 1.7;
+}
+
+.marketing-legal__body ul {
+  padding-left: 22px;
+  margin: 6px 0 20px;
+}
+
+.marketing-legal__body li {
+  margin-bottom: 6px;
+}
+
+.marketing-legal__body a {
+  color: var(--sage);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.marketing-legal__body strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.marketing-legal__body blockquote {
+  border-left: 3px solid var(--border-soft);
+  padding: 4px 0 4px 16px;
+  margin: 20px 0;
+  color: var(--ink-3);
+  font-style: italic;
+  font-family: var(--ff-serif, Georgia, serif);
+  font-size: 16px;
+}
+
+.marketing-legal__body pre {
+  background: var(--paper-shade, rgba(43, 37, 32, 0.04));
+  padding: 12px 14px;
+  border-radius: 6px;
+  overflow-x: auto;
+  font-family: var(--ff-mono, ui-monospace, monospace);
+  font-size: 13px;
+  line-height: 1.55;
+  margin: 20px 0;
+}
+
+.marketing-legal__body code {
+  font-family: var(--ff-mono, ui-monospace, monospace);
+  font-size: 0.95em;
+}
+
+.marketing-legal__body hr {
+  border: none;
+  border-top: 1px solid var(--border-soft);
+  margin: 36px 0;
+}
+
+@media (max-width: 640px) {
+  .marketing-legal {
+    padding: 40px 20px 64px;
+  }
+  .marketing-legal__title {
+    font-size: 34px;
+  }
+  .marketing-legal__body p,
+  .marketing-legal__body li {
+    font-size: 16px;
+  }
+}
+
+/* ---------------------------- Features page ------------------------------ */
+
+.features-page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 56px 24px 80px;
+}
+
+.features-page__title {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 44px;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 8px 0 12px;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+}
+
+.features-page__lede {
+  font-family: var(--ff-serif, Georgia, serif);
+  color: var(--ink-2);
+  font-size: 19px;
+  line-height: 1.55;
+  max-width: 62ch;
+  margin: 0 0 56px;
+}
+
+.features-page__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+}
+
+.features-page__item {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+@media (max-width: 720px) {
+  .features-page__item {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.features-page__illus-wrap {
+  width: 220px;
+  max-width: 100%;
+}
+
+.features-page__illus {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 6px;
+  border: 1px solid var(--border-soft);
+}
+
+.features-page__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.features-page__item-title {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-weight: 500;
+  font-size: 22px;
+  color: var(--ink);
+  margin: 0;
+  letter-spacing: -0.005em;
+}
+
+.features-page__item-body {
+  color: var(--ink-2);
+  font-family: var(--ff-serif, Georgia, serif);
+  font-size: 16px;
+  line-height: 1.7;
+  margin: 0;
+  max-width: 60ch;
+}
+
+.features-page__cta {
+  margin-top: 56px;
+  padding: 40px 24px;
+  border-top: 1px solid var(--border-soft);
+  text-align: center;
+}
+
+.features-page__cta-line {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 24px;
+  color: var(--ink);
+  margin: 0 0 6px;
+}
+
+.features-page__cta-sub {
+  font-family: var(--ff-sans, system-ui, sans-serif);
+  color: var(--ink-3);
+  font-size: 14px;
+  margin: 0 0 18px;
+}
+
+/* ----------------------------- About page -------------------------------- */
+
+.about-page {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 56px 24px 80px;
+}
+
+.about-page__title {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 44px;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 8px 0 12px;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+}
+
+.about-page__lede {
+  font-family: var(--ff-serif, Georgia, serif);
+  color: var(--ink-2);
+  font-size: 19px;
+  line-height: 1.55;
+  max-width: 62ch;
+  margin: 0 0 40px;
+}
+
+.about-page__section {
+  margin: 0 0 40px;
+}
+
+.about-page__section-title {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-weight: 500;
+  font-size: 24px;
+  color: var(--ink);
+  margin: 0 0 12px;
+  letter-spacing: -0.005em;
+}
+
+.about-page__section-body {
+  color: var(--ink-2);
+  font-family: var(--ff-serif, Georgia, serif);
+  font-size: 17px;
+  line-height: 1.7;
+  margin: 0 0 14px;
+}
+
+.about-page__value {
+  margin: 0 0 18px;
+}
+
+.about-page__value-title {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-weight: 500;
+  font-size: 18px;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+
+.about-page__value-body {
+  color: var(--ink-2);
+  font-family: var(--ff-serif, Georgia, serif);
+  font-size: 16px;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.about-page__team-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+  margin: 16px 0 8px;
+}
+
+@media (min-width: 640px) {
+  .about-page__team-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (min-width: 960px) {
+  .about-page__team-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+.about-page__team-card {
+  border: 1px solid var(--border-soft);
+  border-radius: 8px;
+  padding: 18px 20px;
+  background: var(--paper);
+}
+
+.about-page__team-card--open {
+  border-style: dashed;
+  color: var(--ink-3);
+}
+
+.about-page__team-name {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-weight: 500;
+  font-size: 17px;
+  color: var(--ink);
+  margin: 0 0 4px;
+}
+
+.about-page__team-role {
+  font-family: var(--ff-sans, system-ui, sans-serif);
+  font-size: 13px;
+  color: var(--ink-3);
+  margin: 0;
+  letter-spacing: 0.01em;
+}
+
+.about-page__team-note {
+  font-family: var(--ff-sans, system-ui, sans-serif);
+  font-size: 13px;
+  color: var(--ink-3);
+  margin: 8px 0 0;
+  font-style: italic;
+}
+
+.about-page__contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 8px 0 0;
+}
+
+.about-page__contact-list li {
+  color: var(--ink-2);
+  font-family: var(--ff-serif, Georgia, serif);
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.about-page__contact-list li a {
+  color: var(--ink-2);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.about-page__contact-list li a:hover,
+.about-page__contact-list li a:focus-visible {
+  color: var(--ink);
+}
+
+/* -------------------------- Unsubscribe page ----------------------------- */
+
+.unsubscribe-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  padding: 56px 24px 80px;
+}
+
+.unsubscribe-page__card {
+  max-width: 520px;
+  text-align: center;
+  background: var(--paper);
+  border: 1px solid var(--border-soft);
+  border-radius: 12px;
+  padding: 40px 32px;
+}
+
+.unsubscribe-page__eyebrow {
+  font-family: var(--ff-mono, ui-monospace, monospace);
+  font-size: 12px;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 12px;
+}
+
+.unsubscribe-page__title {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 34px;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0 0 16px;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+}
+
+.unsubscribe-page__body {
+  font-family: var(--ff-serif, Georgia, serif);
+  color: var(--ink-2);
+  font-size: 16px;
+  line-height: 1.7;
+  margin: 0 0 16px;
+}
+
+.unsubscribe-page__email {
+  font-family: var(--ff-mono, ui-monospace, monospace);
+  color: var(--ink);
+}
+
+.unsubscribe-page__subtext {
+  font-family: var(--ff-serif, Georgia, serif);
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-3);
+  margin: 18px 0 0;
+  line-height: 1.55;
+}
+
+/* ------------------------ Footer legal sub-row --------------------------- */
+
+.marketing-footer__legal {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 8px 24px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  align-items: center;
+  font-size: 13px;
+  color: var(--ink-3);
+}
+.marketing-footer__legal .marketing-footer__link {
+  padding: 4px 0;
+}
+

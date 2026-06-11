@@ -1,0 +1,245 @@
+# Inspira backend — Fly.io app config.
+#
+# Companion to services/Dockerfile. Deploy with:
+#
+#   cd services && flyctl deploy --config fly.toml
+#
+# or from the repo root:
+#
+#   flyctl deploy --config services/fly.toml --dockerfile services/Dockerfile
+#
+# The first deploy still needs `flyctl launch --no-deploy` run once (or just
+# `flyctl apps create inspira-backend`) so the app name is reserved in your
+# Fly account. After that, the CI workflow in .github/workflows/deploy.yml
+# handles subsequent rollouts on push to main.
+#
+# ------------------------------------------------------------------------
+# Production topology
+# ------------------------------------------------------------------------
+#   - App runs in primary_region (iad) with auto-stop when idle. First
+#     request after idle wakes a machine in <1s — acceptable for a small
+#     product with moderate traffic.
+#   - HTTPS terminates at Fly's edge via `force_https`. Fly issues the
+#     cert automatically once you run `flyctl certs add api.tryinspira.com`.
+#   - DATABASE_URL points at an external Neon Postgres instance. We do NOT
+#     mount a volume here — SQLite was only for local dev. Postgres is
+#     the production story.
+#   - Secrets (OPENAI_API_KEY, ANTHROPIC_API_KEY, SESSION_SECRET,
+#     DATABASE_URL, STRIPE_* later, SMTP creds later) come from
+#     `flyctl secrets set ...`, not this file.
+#
+#     ANTHROPIC_API_KEY backs the frontier model tier (Claude Sonnet).
+#     When unset, frontier turns fall back to OpenAI with a logged
+#     warning — dev environments stay functional. Set it in production:
+#         flyctl secrets set ANTHROPIC_API_KEY=sk-ant-...
+
+app = "inspira-backend"
+primary_region = "iad"   # US East (Ashburn). Swap to "sjc", "lhr", "fra" as your audience dictates.
+
+# Two process groups run inside the same app:
+#   - ``app`` — the main FastAPI backend on port 4174 (api.tryinspira.com)
+#   - ``mcp`` — the Inspira MCP server on port 4175 (mcp.tryinspira.com).
+#     Consumed by Claude.ai over streamable-HTTP. The OpenAI Custom GPT
+#     Actions surface runs inside ``app`` under /api/v2/mcp/* — ChatGPT
+#     does NOT speak MCP, it speaks plain OpenAPI over HTTP to our main
+#     API host.
+#
+# DNS + cert issuance (one-time):
+#   1. In Cloudflare, add a CNAME record ``mcp`` → ``inspira-backend.fly.dev``
+#      (flagged "DNS only" — Cloudflare proxying breaks Fly's TLS
+#      termination hand-off).
+#   2. ``flyctl certs add mcp.tryinspira.com`` — waits for the DNS
+#      record to propagate and requests a cert from Fly's CA pool.
+#   3. The first deploy after adding this process group needs
+#      ``flyctl scale count mcp=1`` so a machine is actually provisioned
+#      for the new group. Subsequent deploys keep the count.
+#
+# 2026-04-23: MCP process group temporarily disabled. When both process
+# groups declared external port 443, Fly's edge load-balanced a large
+# fraction of api.tryinspira.com requests to MCP machines — which only
+# know /mcp and /healthz routes, so the PAT middleware answered every
+# /api/* request with ``{"error": "missing_token"}`` (401). That surfaced
+# as random login failures, health probes flipping to degraded, and
+# kickoff 503s during the stability demo.
+#
+# MCP is only needed when integrating with Claude.ai over streamable
+# HTTP; the ChatGPT Custom GPT Actions surface lives under /api/v2/mcp/*
+# inside the main app and doesn't need this process group at all.
+#
+# To re-enable safely: (a) give the MCP process a different external
+# port (e.g. keep it internal-only and front it with a separate Fly
+# app), or (b) move MCP to its own Fly app so routing can't overlap.
+# Uncomment the mcp line + the [[services]] block below when a clean
+# routing story is in place.
+[processes]
+  app = "python -m planning_studio_service"
+  # mcp = "python -m inspira_mcp"
+
+# Persistent volume for /data — primarily used by dev/fallback SQLite.
+# In production, DATABASE_URL points at Neon Postgres so SQLite is never
+# written; the volume is still useful for session transcripts and artifacts
+# stored under PLANNING_STUDIO_STORAGE_ROOT=/data.
+#
+# Before the first deploy after adding this section, provision the volume:
+#   flyctl volumes create inspira_data --size 1 -a inspira-backend --region iad
+#
+# If you scale to multiple machines, each machine gets its own volume —
+# that is fine when the canonical state lives in Postgres (Neon). The
+# volume only needs to survive per-machine restarts, not be shared.
+[mounts]
+  source = "inspira_data"
+  destination = "/data"
+
+# Build settings — point at the existing Dockerfile.
+[build]
+  dockerfile = "Dockerfile"
+
+# Runtime env exposed in plaintext. Everything sensitive lives in
+# `flyctl secrets`, never here.
+#
+# Transactional email:
+#   Set the Resend API key as a secret before the first deploy that
+#   relies on forgot-password / welcome email:
+#       flyctl secrets set RESEND_API_KEY=re_xxx
+#   Also verify the sending domain (tryinspira.com) inside the Resend
+#   dashboard — add the SPF, DKIM and MX records Resend gives you to
+#   the DNS zone Cloudflare manages. Without verified DNS Resend will
+#   accept the API call but the mail never leaves their edge.
+#
+#   The backend auto-selects Resend whenever RESEND_API_KEY is set. To
+#   force a different provider, also set EMAIL_PROVIDER (noop | resend |
+#   postmark | loops) as a secret.
+[env]
+  PLANNING_STUDIO_HOST = "0.0.0.0"
+  PLANNING_STUDIO_PORT = "4174"
+  PLANNING_STUDIO_STORAGE_ROOT = "/data"
+  # Restrict CORS to the production frontend origins. The backend reads
+  # INSPIRA_ALLOWED_ORIGINS as a comma-delimited allowlist (see api.py).
+  # Cloudflare Pages preview URLs (*.pages.dev) aren't covered here — if
+  # you want CORS-enabled previews, add the specific preview URL after
+  # your first deploy, or extend the backend to accept a regex env var.
+  INSPIRA_ALLOWED_ORIGINS = "https://tryinspira.com,https://www.tryinspira.com"
+  # Base URL the backend uses when composing email links (password reset,
+  # welcome CTA). Overrides the per-request Origin header — set this so
+  # links in a forwarded email still point at production.
+  INSPIRA_APP_BASE_URL = "https://tryinspira.com"
+  INSPIRA_FRONTEND_URL = "https://tryinspira.com"
+  # Sender identity on transactional email. Format is either a bare
+  # address or "Display Name <address>". Must match a verified domain
+  # inside Resend (or whichever provider EMAIL_PROVIDER points at).
+  INSPIRA_EMAIL_FROM = "Inspira <hello@example.com>"
+  # Cookie is only valid over HTTPS in prod — set the flag so the Set-Cookie
+  # header gets `Secure`. The default (`false`) is for local dev over http.
+  INSPIRA_COOKIE_SECURE = "true"
+  LOG_LEVEL = "info"
+
+# Release command — runs once on a temporary machine before the new
+# version is rolled out to user-serving machines. If this exits non-zero,
+# the deploy is aborted and the old version keeps serving. We learned
+# the hard way that without this, alembic migrations sit un-applied and
+# the new code 500s every authenticated request when it tries to read a
+# column that doesn't exist yet (PR 3 added users.terms_accepted_at).
+#
+# `scripts/migrate.sh` runs `alembic upgrade head` and prints before/after
+# revisions to the deploy log so you can grep for it after the fact.
+[deploy]
+  release_command = "bash scripts/migrate.sh"
+
+# HTTP service: Fly's edge terminates TLS and forwards to internal_port.
+[http_service]
+  internal_port = 4174
+  force_https = true
+  # Keep one machine warm at all times so cold starts don't tax the
+  # first request of every idle period. With `min_machines_running = 0`
+  # + `auto_stop_machines = "stop"` the first hit after idle was ~18s
+  # (measured against /api/health in April 2026). Suspend (vs stop)
+  # keeps the machine in a cheap hibernation state — wakes in ~300ms —
+  # and `min_machines_running = 1` guarantees at least one warm replica.
+  # Cost: ~$5-7/mo for a shared-cpu-1x 512MB machine idling. Worth it
+  # once the app is user-facing.
+  auto_stop_machines = "suspend"
+  auto_start_machines = true
+  # Keep BOTH machines warm. We saw a real demo outage when one machine
+  # auto-suspended mid-session: Fly's edge load-balanced ~50% of requests
+  # to the suspended machine, returning 503. Bumping to 2 makes the auto-
+  # suspend a no-op and gives us a hot replica for failover. Cost: ~$10/mo
+  # vs ~$5/mo. Cheap insurance until traffic justifies a smarter policy.
+  min_machines_running = 2
+  # Cost insurance — even with concurrency limits, an unbounded autoscale
+  # ceiling means a traffic spike (or a misbehaving client retrying a
+  # 503 in a tight loop) can run up the bill. 4 is enough headroom over
+  # the min=2 floor for a small product without becoming a runaway.
+  # Bump deliberately when traffic justifies it.
+  max_machines_running = 4
+  processes = ["app"]
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 200
+    soft_limit = 150
+
+# Health check — Fly hits /api/health/db to decide whether a machine is
+# serving traffic. /api/health/db actually round-trips to Postgres
+# (SELECT 1) instead of returning a static "ok". A machine that can't
+# reach Neon will fail the check and Fly will pull it from rotation
+# while the other machine keeps serving.
+#
+# Audit context: D8 in the 2026-04-25 infrastructure audit found that
+# /api/health was too permissive — it returned 200 even when Neon was
+# down, leaving broken machines in rotation while users hit 500s.
+#
+# Risk: if Neon has a transient blip, both machines could fail the
+# check simultaneously and Fly could pull both. timeout=5s and
+# interval=30s give margin for slow Neon queries; if you see false
+# positives, bump timeout to 10s or look at /api/health (static) for
+# the second machine.
+[[http_service.checks]]
+  grace_period = "15s"
+  interval = "30s"
+  method = "GET"
+  timeout = "5s"
+  path = "/api/health/db"
+
+# Machine size — the backend's hot path is just an LLM HTTP call + a small
+# Python transform. A shared-cpu-1x with 512MB is enough for early traffic.
+# Bump to 1GB if you start hitting OOM on larger attachment processing.
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  cpu_kind = "shared"
+  cpus = 1
+
+# -----------------------------------------------------------------------
+# MCP process group — Claude.ai streamable-HTTP surface on port 4175.
+# -----------------------------------------------------------------------
+# DISABLED 2026-04-23 — see the top-of-file comment on the [processes]
+# table for the incident context. Re-enable by uncommenting the
+# ``mcp = ...`` line in [processes] AND this whole [[services]] block,
+# after the routing overlap with port 443 is resolved (most likely by
+# moving MCP to its own Fly app).
+#
+# [[services]]
+#   processes = ["mcp"]
+#   protocol = "tcp"
+#   internal_port = 4175
+#
+#   [[services.ports]]
+#     port = 80
+#     handlers = ["http"]
+#     force_https = true
+#
+#   [[services.ports]]
+#     port = 443
+#     handlers = ["tls", "http"]
+#
+#   [services.concurrency]
+#     type = "requests"
+#     hard_limit = 200
+#     soft_limit = 150
+#
+#   [[services.http_checks]]
+#     interval = "30s"
+#     grace_period = "15s"
+#     method = "get"
+#     timeout = "5s"
+#     path = "/healthz"

@@ -1,0 +1,39 @@
+# Cloudflare Pages — security headers + cache policy.
+#
+# This file is the canonical source of HTTP response headers for the
+# tryinspira.com frontend. It mirrors the security posture defined in
+# app/nginx.conf (which is dead code in production — the frontend is
+# served by Cloudflare Pages, not the nginx image).
+#
+# Pages reads this file from the build output root. Vite copies
+# everything in app/public/ to the build output, so this file lands at
+# the right path automatically.
+#
+# Audit context: D3 in the 2026-04-25 infrastructure audit found that
+# the frontend was returning only Cloudflare's default x-content-type-
+# options + referrer-policy headers — no CSP, no HSTS, no XFO, no
+# Permissions-Policy. This file closes that gap.
+
+/*
+  Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self' https://api.tryinspira.com; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests
+  # HSTS deliberately deferred (2026-04-25) until after potential
+  # AWS/GCP infra move. max-age=0 actively CLEARS any HSTS state
+  # browsers cached from the prior `max-age=31536000; includeSubDomains;
+  # preload` directive that shipped earlier tonight. Bump back up to
+  # `max-age=31536000; includeSubDomains; preload` once infra is settled.
+  Strict-Transport-Security: max-age=0
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), camera=(), geolocation=(), microphone=(), payment=(), usb=()
+  X-Frame-Options: DENY
+
+# Long-cache the hashed asset bundles — Vite emits content-hashed
+# filenames so they're safe to cache forever. New deploys produce new
+# hashes which bypass any cached older versions.
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# Never cache the SPA shell — it references the latest hashed JS
+# bundle, so a stale shell would point at deleted assets after a deploy.
+/index.html
+  Cache-Control: no-cache

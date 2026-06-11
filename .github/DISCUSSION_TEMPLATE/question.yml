@@ -1,0 +1,48 @@
+title: "[question] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Welcome. Before asking, a quick search of existing discussions often turns up an answer faster than waiting for a reply. If you don't find one — ask away. No question is too small.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: What are you trying to do?
+      description: Describe the outcome you're after, not just the mechanic you're stuck on. Context helps us give a better answer.
+      placeholder: "I'm trying to use Inspira to plan a short story, and I'm not sure how to..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried so far?
+      description: Steps you've taken, docs you've read, workarounds you've attempted. Even "nothing yet — wasn't sure where to start" is a fine answer.
+      placeholder: "I read the README and looked at..."
+    validations:
+      required: false
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Where is this happening?
+      description: Pick the surface that best describes your question.
+      options:
+        - The web app (canvas, topics, interview)
+        - The backend service
+        - Local development / setup
+        - Product direction or behavior
+        - Something else
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else worth sharing?
+      description: Screenshots, links, version info, or related discussions.
+      placeholder: "Optional."
+    validations:
+      required: false

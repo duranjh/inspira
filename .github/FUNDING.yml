@@ -1,0 +1,13 @@
+# Inspira sponsor platforms.
+#
+# This file is intentionally all-commented-out. Uncomment the lines you want
+# active once the corresponding sponsor accounts exist. GitHub will ignore any
+# line starting with "#".
+#
+# Docs: https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/displaying-a-sponsor-button-in-your-repository
+
+# github: [duranjh]            # GitHub Sponsors — single username or list.
+# patreon: tryinspira          # Patreon page handle.
+# ko_fi: tryinspira            # Ko-fi page handle.
+# open_collective: tryinspira  # Open Collective slug.
+# custom: ["https://tryinspira.com/support"]

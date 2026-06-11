@@ -1,0 +1,1256 @@
+/* ============================================================================
+   Inspira — Account Settings page (warm editorial)
+   ============================================================================
+
+   Full-viewport paper overlay. Serif display headings, cream inputs, and a
+   single rust-tinted danger zone at the bottom. Sections are stacked with
+   48px of breathing room between them and separated by soft dividers.
+
+   Tokens come from App.css (--paper, --ink-*, --sage, --rust, --paper-edge,
+   --border-soft) so dark-theme inherits automatically.
+*/
+
+.account-page {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  background: var(--paper);
+  color: var(--ink);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  animation: account-page-fade-in 220ms ease;
+}
+
+@keyframes account-page-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.account-page__topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 22px 28px;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.account-page__brand {
+  font-family: var(--ff-serif);
+  font-weight: 400;
+  font-size: 28px;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.account-page__close {
+  font-family: var(--ff-serif);
+  font-size: 28px;
+  line-height: 1;
+  border: 1px solid var(--paper-edge);
+  background: transparent;
+  color: var(--ink-2);
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+
+.account-page__close:hover {
+  background: var(--paper-3);
+  border-color: var(--ink-5);
+}
+
+.account-page__close:focus-visible {
+  outline: 2px solid var(--sage);
+  outline-offset: 2px;
+}
+
+.account-page__inner {
+  max-width: 720px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 40px 32px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+/* ---- Section shell -------------------------------------------------- */
+
+.account-section {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-bottom: 48px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.account-section:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.account-section__heading {
+  font-family: var(--ff-serif);
+  font-weight: 400;
+  font-size: 22px;
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  margin: 0;
+}
+
+.account-section__subtitle {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--ink-3);
+  margin: -10px 0 4px;
+  max-width: 60ch;
+}
+
+.account-section__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* ---- Form primitives ----------------------------------------------- */
+
+.account-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.account-field__label {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.account-field__hint {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--ink-4);
+  line-height: 1.45;
+  margin: 2px 0 0;
+}
+
+.account-field__input,
+.account-field__input-readonly {
+  font-family: var(--ff-serif);
+  font-size: 16px;
+  line-height: 1.4;
+  padding: 12px 14px;
+  border: 1px solid var(--paper-edge);
+  border-radius: 10px;
+  background: #fbf7ee;
+  color: var(--ink);
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.account-field__input:focus {
+  border-color: var(--ink-5);
+  box-shadow: 0 0 0 3px rgba(43, 37, 32, 0.10);
+}
+
+.account-field__input-readonly {
+  background: color-mix(in srgb, var(--paper) 60%, var(--paper-2));
+  color: var(--ink-2);
+  cursor: default;
+}
+
+.account-field__input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Dark-mode cream input background parity with AuthPanel / topic detail. */
+:root[data-theme="dark"] .account-field__input,
+:root[data-theme="dark"] .account-field__input-readonly {
+  background: #2a2218;
+}
+
+/* Modern Dark — cool-slate counterpart. */
+:root[data-style="modern"][data-theme="dark"] .account-field__input,
+:root[data-style="modern"][data-theme="dark"] .account-field__input-readonly {
+  background: var(--paper-lifted);
+}
+
+/* ---- Buttons ------------------------------------------------------- */
+
+.account-btn {
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 20px;
+  border-radius: var(--radius-btn, 999px);
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  cursor: pointer;
+  transition: transform 120ms ease, opacity 150ms ease;
+  align-self: flex-start;
+}
+
+.account-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.account-btn:focus-visible {
+  outline: 2px solid var(--sage);
+  outline-offset: 2px;
+}
+
+.account-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.account-btn--ghost {
+  background: transparent;
+  color: var(--ink-2);
+  border-color: var(--paper-edge);
+}
+
+.account-btn--ghost:hover:not(:disabled) {
+  border-color: var(--ink-5);
+}
+
+.account-btn--danger {
+  background: var(--rust);
+  border-color: var(--rust);
+  color: #fbf7ee;
+}
+
+/* ---- Profile status hint ------------------------------------------- */
+
+.account-status {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-3);
+  margin: 0;
+  min-height: 1.4em;
+}
+
+.account-status--saved {
+  color: var(--sage);
+}
+
+.account-status--error {
+  color: var(--rust);
+}
+
+/* ---- Theme style label -------------------------------------------- */
+
+.account-theme-label {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 10px;
+}
+
+/* ---- Theme style cards -------------------------------------------- */
+
+.account-theme-cards {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.account-theme-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 140px;
+  padding: 14px 14px 12px;
+  border: 2px solid var(--paper-edge);
+  border-radius: var(--radius-card, 14px);
+  background: var(--paper-2);
+  cursor: pointer;
+  transition: border-color 140ms ease, background 140ms ease;
+}
+
+.account-theme-card:hover {
+  border-color: var(--ink-5);
+  background: var(--paper-3);
+}
+
+.account-theme-card--active {
+  border-color: var(--sage);
+  background: color-mix(in srgb, var(--sage) 6%, var(--paper));
+}
+
+.account-theme__input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.account-theme__input:focus-visible + .account-theme-card__swatch {
+  outline: 2px solid var(--sage);
+  outline-offset: 2px;
+}
+
+.account-theme-card__swatch {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 56px;
+  border-radius: calc(var(--radius-card, 14px) - 4px);
+  overflow: hidden;
+}
+
+.account-theme-card__swatch--bookworm {
+  background: #f5f0e6;
+  border: 1px solid #dbcfb6;
+}
+
+.account-theme-card__swatch--modern {
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+}
+
+.account-theme-card__swatch-serif {
+  font-family: "Source Serif 4", Georgia, serif;
+  font-size: 22px;
+  font-style: italic;
+  color: #568868;
+}
+
+.account-theme-card__swatch-sans {
+  font-family: "Geist", system-ui, sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  /* Gunmetal — matches the Modern-theme --sage/primary accent. */
+  color: #4a5562;
+}
+
+.account-theme-card__name {
+  font-family: var(--ff-sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.account-theme-card__tagline {
+  font-family: var(--ff-sans);
+  font-size: 11px;
+  color: var(--ink-3);
+  line-height: 1.35;
+}
+
+/* ---- Theme toggle (segmented pills) -------------------------------- */
+
+.account-theme {
+  display: inline-flex;
+  gap: 6px;
+  padding: 4px;
+  border-radius: var(--radius-btn, 999px);
+  background: color-mix(in srgb, var(--paper) 60%, var(--paper-2));
+  border: 1px solid var(--paper-edge);
+  align-self: flex-start;
+  flex-wrap: wrap;
+}
+
+.account-theme__option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.account-theme__input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.account-theme__label {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 18px;
+  font-family: var(--ff-sans);
+  font-size: 12.5px;
+  color: var(--ink-2);
+  border-radius: var(--radius-btn, 999px);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+  border: 1px solid transparent;
+}
+
+.account-theme__option:hover .account-theme__label {
+  color: var(--ink);
+}
+
+.account-theme__input:checked + .account-theme__label {
+  background: var(--ink);
+  color: var(--paper);
+  font-weight: 500;
+}
+
+.account-theme__input:focus-visible + .account-theme__label {
+  outline: 2px solid var(--sage);
+  outline-offset: 2px;
+}
+
+/* ---- Danger zone --------------------------------------------------- */
+
+.account-danger {
+  padding: 24px 22px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--rust) 8%, var(--paper));
+  border: 1px solid color-mix(in srgb, var(--rust) 35%, var(--paper-edge));
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.account-danger__heading {
+  font-family: var(--ff-serif);
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0;
+}
+
+.account-danger__body {
+  font-family: var(--ff-serif);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  margin: 0;
+  max-width: 60ch;
+}
+
+.account-danger__confirm {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--rust) 5%, #fbf7ee);
+  border: 1px dashed color-mix(in srgb, var(--rust) 40%, var(--paper-edge));
+}
+
+:root[data-theme="dark"] .account-danger__confirm {
+  background: color-mix(in srgb, var(--rust) 10%, #2a2218);
+}
+
+/* Modern Dark — mix with the cool-slate lifted surface instead of espresso. */
+:root[data-style="modern"][data-theme="dark"] .account-danger__confirm {
+  background: color-mix(in srgb, var(--rust) 10%, var(--paper-lifted));
+}
+
+.account-danger__confirm-label {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--rust);
+}
+
+.account-danger__actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.account-danger__note {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 12.5px;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+/* ---- Reduced motion ------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .account-page {
+    animation: none;
+  }
+  .account-btn:hover:not(:disabled) {
+    transform: none;
+  }
+}
+
+/* ---- Responsive ----------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .account-page__topbar {
+    padding: 16px 18px;
+  }
+  .account-page__brand {
+    font-size: 22px;
+  }
+  .account-page__inner {
+    padding: 28px 20px 60px;
+    gap: 36px;
+  }
+  .account-section {
+    padding-bottom: 36px;
+    gap: 14px;
+  }
+  .account-section__heading {
+    font-size: 20px;
+  }
+  .account-field__input,
+  .account-field__input-readonly {
+    font-size: 15px;
+  }
+  .account-theme__label {
+    padding: 8px 14px;
+  }
+  .account-danger {
+    padding: 20px 18px;
+  }
+}
+
+/* ============================================================================
+   Mobile responsive additions — phones (≤520px)
+   Appended after all existing rules. The ≤640px block above is untouched.
+   ============================================================================ */
+
+/* ---- 768px: tablets — tighten page chrome, wrap theme picker ---- */
+@media (max-width: 768px) {
+  .account-page__topbar {
+    padding: 18px 22px;
+  }
+  .account-page__brand {
+    font-size: 24px;
+  }
+  .account-page__inner {
+    /* Cap the form column to viewport with breathable side padding so
+       inputs never overflow on portrait tablets. */
+    max-width: 100%;
+    padding: 32px 24px 64px;
+    gap: 40px;
+  }
+  .account-section {
+    padding-bottom: 40px;
+  }
+  /* Ensure the close button hits the 44px minimum tap target on touch
+     devices without changing its visual size on desktop. */
+  .account-page__close {
+    width: 40px;
+    height: 40px;
+  }
+  /* Theme cards already wrap; allow them to grow to fill the row so a
+     2-column rhythm reads cleanly at portrait-tablet width. */
+  .account-theme-cards {
+    gap: 10px;
+  }
+  .account-theme-card {
+    flex: 1 1 calc(50% - 10px);
+    min-width: 140px;
+  }
+}
+
+/* ---- 520px: phones — tighter page padding, full-width buttons ---- */
+@media (max-width: 520px) {
+  .account-page__topbar {
+    padding: 12px 14px;
+  }
+  .account-page__brand {
+    font-size: 18px;
+  }
+  .account-page__inner {
+    padding: 20px 14px 52px;
+    gap: 28px;
+  }
+  .account-section {
+    padding-bottom: 28px;
+    gap: 12px;
+  }
+  .account-section__heading {
+    font-size: 18px;
+  }
+  /* Save / action buttons: stretch to full width on narrow phones for
+     easier one-thumb activation. */
+  .account-btn {
+    align-self: stretch;
+    text-align: center;
+    justify-content: center;
+  }
+  /* Danger zone confirm actions also stretch. */
+  .account-danger__actions {
+    flex-direction: column;
+  }
+  .account-danger__actions .account-btn {
+    width: 100%;
+  }
+  .account-danger {
+    padding: 16px 14px;
+  }
+  /* Theme picker: wrap pills to prevent overflow on 375px. */
+  .account-theme {
+    flex-wrap: wrap;
+  }
+}
+
+/* ============================================================================
+   Security section (C1) — 2FA status block, sessions table, subheadings
+   ============================================================================ */
+
+.account-security__status {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--paper) 60%, var(--paper-2));
+  border: 1px solid var(--paper-edge);
+}
+
+.account-security__status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.account-security__status-label {
+  font-family: var(--ff-serif);
+  font-size: 15px;
+  color: var(--ink);
+}
+
+.account-security__badge {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--paper-edge) 40%, transparent);
+  color: var(--ink-3);
+}
+
+.account-security__badge--on {
+  background: color-mix(in srgb, var(--sage) 18%, var(--paper));
+  color: var(--sage);
+  border: 1px solid color-mix(in srgb, var(--sage) 40%, transparent);
+}
+
+.account-security__actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.account-security__sage-cta {
+  background: var(--sage);
+  border-color: var(--sage);
+  color: var(--paper);
+}
+
+.account-security__danger-link {
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  color: var(--rust);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px 10px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.account-security__danger-link:hover {
+  color: color-mix(in srgb, var(--rust) 80%, var(--ink));
+}
+
+.account-security__danger-link:focus-visible {
+  outline: 2px solid var(--sage);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.account-security__sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.account-security__subheading {
+  font-family: var(--ff-serif);
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0;
+}
+
+.account-security__subheading-help {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-3);
+  margin: 0;
+}
+
+/* ---- Sessions table --------------------------------------------------- */
+
+.account-sessions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.account-sessions__table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--ff-sans);
+  font-size: 13px;
+  background: var(--paper-2);
+  border: 1px solid var(--paper-edge);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.account-sessions__th {
+  font-family: var(--ff-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  text-align: left;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--paper-edge);
+  font-weight: 500;
+}
+
+.account-sessions__row {
+  border-top: 1px solid var(--paper-edge);
+}
+
+.account-sessions__row:first-child {
+  border-top: none;
+}
+
+.account-sessions__row--current {
+  background: color-mix(in srgb, var(--sage) 8%, var(--paper));
+  border-left: 3px solid var(--sage);
+}
+
+.account-sessions__td {
+  padding: 12px 14px;
+  color: var(--ink-2);
+  vertical-align: middle;
+}
+
+.account-sessions__td--mono {
+  font-family: var(--ff-mono);
+  font-size: 12px;
+  color: var(--ink-3);
+}
+
+.account-sessions__td--actions {
+  text-align: right;
+}
+
+.account-sessions__device {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.account-sessions__device-name {
+  font-family: var(--ff-serif);
+  font-size: 14px;
+  color: var(--ink);
+}
+
+.account-sessions__this-device {
+  font-family: var(--ff-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--sage);
+}
+
+.account-sessions__revoke {
+  font-family: var(--ff-sans);
+  font-size: 12.5px;
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid var(--paper-edge);
+  border-radius: 999px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease;
+}
+
+.account-sessions__revoke:hover:not(:disabled) {
+  border-color: var(--rust);
+  color: var(--rust);
+}
+
+.account-sessions__revoke:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.account-sessions__footer {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.account-sessions__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================================================
+   2FA modal (setup / disable / regenerate recovery)
+   ============================================================================ */
+
+.twofa-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  padding: 40px 20px;
+  background: rgba(43, 37, 32, 0.5);
+  animation: twofa-modal-fade-in 180ms ease-out;
+}
+
+.twofa-modal__card {
+  max-width: 480px;
+  width: 100%;
+  background: var(--paper-lifted, var(--paper));
+  border: 1px solid var(--paper-edge);
+  border-radius: 16px;
+  box-shadow: 0 40px 80px -24px rgba(43, 37, 32, 0.45);
+  animation: twofa-modal-rise 220ms cubic-bezier(0.2, 0, 0.2, 1);
+  max-height: calc(100vh - 80px);
+  overflow-y: auto;
+}
+
+.twofa-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 24px 12px;
+  border-bottom: 1px solid var(--border-soft, var(--paper-edge));
+}
+
+.twofa-modal__title {
+  font-family: var(--ff-serif);
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0;
+}
+
+.twofa-modal__close {
+  font-family: var(--ff-serif);
+  font-size: 24px;
+  line-height: 1;
+  border: 1px solid var(--paper-edge);
+  background: transparent;
+  color: var(--ink-3);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+}
+
+.twofa-modal__close:hover {
+  background: var(--paper-3);
+  color: var(--ink);
+}
+
+.twofa-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px 24px 24px;
+}
+
+.twofa-modal__step-heading {
+  font-family: var(--ff-serif);
+  font-size: 17px;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0;
+}
+
+.twofa-modal__body-text {
+  font-family: var(--ff-serif);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  margin: 0;
+}
+
+.twofa-modal__body-text--warm {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--gold) 16%, var(--paper));
+  border-left: 3px solid var(--gold);
+  padding: 12px 14px;
+  border-radius: 6px;
+}
+
+.twofa-modal__actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+
+.twofa-qr {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  /* QR codes need a high-contrast light field regardless of theme so
+     phone cameras can scan them reliably. We lift to the paper token
+     with a touch of cream mix so it still reads as part of the sheet. */
+  background: color-mix(in srgb, var(--paper) 30%, white);
+  border: 1px solid var(--paper-edge);
+  border-radius: 12px;
+  width: 200px;
+  height: 200px;
+  align-self: center;
+}
+
+.twofa-qr svg {
+  width: 100%;
+  height: 100%;
+}
+
+.twofa-secret {
+  font-family: var(--ff-mono);
+  font-size: 13px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--paper-edge) 30%, var(--paper));
+  border-radius: 8px;
+  color: var(--ink);
+  user-select: all;
+  word-break: break-all;
+}
+
+.twofa-code-input {
+  font-family: var(--ff-mono);
+  font-size: 22px;
+  letter-spacing: 0.2em;
+  text-align: center;
+}
+
+.twofa-codes {
+  list-style: none;
+  padding: 12px 16px;
+  margin: 0;
+  background: color-mix(in srgb, var(--paper-edge) 20%, var(--paper));
+  border-radius: 8px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 16px;
+  font-family: var(--ff-mono);
+  font-size: 13px;
+  color: var(--ink);
+}
+
+.twofa-codes__item {
+  user-select: all;
+}
+
+@keyframes twofa-modal-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes twofa-modal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .twofa-modal,
+  .twofa-modal__card {
+    animation: none;
+  }
+}
+
+/* ---- Two-factor disable v2 additions ----------------------------------- */
+
+.twofa-modal__card--v2 {
+  position: relative;
+  padding: 30px 32px 26px;
+  background: var(--paper);
+}
+
+.twofa-modal__card--v2 .twofa-modal__close {
+  position: absolute;
+  top: 16px;
+  right: 18px;
+}
+
+.twofa-modal__eyebrow {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 10px;
+}
+
+.twofa-modal__card--v2 .twofa-modal__title {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 24px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0 0 14px;
+}
+
+.twofa-modal__serif {
+  font-family: var(--ff-serif);
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--ink-2);
+  margin: 0 0 8px;
+}
+
+.twofa-modal__inline-error {
+  font-family: var(--ff-serif);
+  font-style: italic;
+  font-size: 13.5px;
+  color: var(--rust-deep, var(--rust));
+  margin: 8px 0 0;
+}
+
+.twofa-modal__success-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 12px;
+}
+
+.twofa-modal__success-head .twofa-modal__title {
+  margin: 0;
+}
+
+.twofa-modal__check {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--sage);
+  color: var(--paper-lifted, var(--paper));
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--ff-serif);
+  font-size: 16px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.account-btn--sage {
+  background: var(--sage);
+  border-color: var(--sage);
+  color: var(--paper-lifted, var(--paper));
+}
+
+.account-btn--sage:hover:not(:disabled) {
+  background: var(--sage-deep, var(--sage));
+  border-color: var(--sage-deep, var(--sage));
+}
+
+.account-field__input--invalid {
+  border-color: var(--rust);
+  background: color-mix(in srgb, var(--rust) 5%, var(--paper-lifted, var(--paper)));
+}
+
+/* ============================================================================
+   Email preferences (C2) — grouped toggle lists
+   ============================================================================ */
+
+.account-email-prefs__group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border-soft, var(--paper-edge));
+}
+
+.account-email-prefs__group:last-of-type {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.account-email-prefs__group-title {
+  font-family: var(--ff-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0;
+  font-weight: 500;
+}
+
+.account-email-prefs__group-helper {
+  font-family: var(--ff-serif);
+  font-size: 12.5px;
+  color: var(--ink-3);
+  margin: 0 0 4px;
+  line-height: 1.45;
+}
+
+.account-email-prefs__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.account-email-prefs__row {
+  padding: 6px 0;
+}
+
+.account-email-prefs__label {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-family: var(--ff-serif);
+  font-size: 14.5px;
+  color: var(--ink);
+}
+
+.account-email-prefs__checkbox {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--sage);
+}
+
+.account-email-prefs__checkbox:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.account-email-prefs__checkbox:disabled + .account-email-prefs__label-text {
+  color: var(--ink-3);
+}
+
+.account-email-prefs__footer {
+  margin-top: 6px;
+}
+
+/* ---- 480px: small phones (incl. 375px) — prevent iOS zoom + full-width
+       theme cards + larger tap targets ---- */
+@media (max-width: 480px) {
+  .account-page__topbar {
+    padding: 10px 12px;
+  }
+  .account-page__inner {
+    padding: 16px 12px 48px;
+    gap: 24px;
+  }
+  /* Inputs must stay at 16px to prevent iOS Safari from auto-zooming the
+     viewport on focus. The 640px block above drops them to 15px which
+     re-introduces the zoom; restore here for narrow phones. */
+  .account-field__input,
+  .account-field__input-readonly {
+    font-size: 16px;
+    padding: 12px 12px;
+  }
+  /* Close button: comfortable thumb target on small phones. */
+  .account-page__close {
+    width: 44px;
+    height: 44px;
+    font-size: 24px;
+  }
+  /* Theme cards: stack to one per row so the swatch + label stay legible
+     instead of squeezed into a 2-up grid at 375px. */
+  .account-theme-cards {
+    flex-direction: column;
+    gap: 10px;
+  }
+  .account-theme-card {
+    width: 100%;
+    flex: 0 0 auto;
+  }
+  .account-theme-card__swatch {
+    height: 64px;
+  }
+  /* Theme toggle pills: stack each option to full row for easier hit. */
+  .account-theme {
+    width: 100%;
+    align-self: stretch;
+  }
+  .account-theme__option {
+    flex: 1 1 auto;
+  }
+  .account-theme__label {
+    width: 100%;
+    justify-content: center;
+    padding: 10px 12px;
+  }
+  /* Danger zone: tighter padding so the dashed confirm box doesn't run
+     off-screen at 375px. */
+  .account-danger {
+    padding: 14px 12px;
+  }
+  .account-danger__confirm {
+    padding: 12px;
+  }
+}
