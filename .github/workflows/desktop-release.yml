@@ -58,7 +58,7 @@ jobs:
           projectPath: app
           args: ${{ matrix.args }}
           tagName: ${{ github.ref_name }}
-          releaseName: Planning Studio ${{ github.ref_name }}
-          releaseBody: Automated desktop release for Planning Studio.
+          releaseName: Inspira ${{ github.ref_name }}
+          releaseBody: Automated desktop release for Inspira.
           releaseDraft: true
           prerelease: false

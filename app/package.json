@@ -12,6 +12,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
+    "tauri": "tauri",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "desktop:build:windows": "powershell -ExecutionPolicy Bypass -File ..\\scripts\\build-windows-desktop.ps1",
