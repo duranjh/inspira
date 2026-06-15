@@ -32,7 +32,7 @@ dependencies = [
   # lazy-import in StripeBillingProvider._stripe() means deploys without
   # this dep still boot — but the checkout endpoint 500s when Stripe is
   # actually called. Pin to dep tree so no live deploy can run without it.
-  "stripe>=12.0,<14.0",
+  "stripe>=12.0,<16.0",
 ]
 
 [project.optional-dependencies]
