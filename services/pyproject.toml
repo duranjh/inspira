@@ -21,7 +21,7 @@ dependencies = [
   # Pinned (not unbounded floor) so a `pip install -U` can't silently
   # break tool-use parsing in claude_adapter.py. Bump explicitly via a
   # PR that runs the adapter integration tests against the new SDK.
-  "anthropic==0.109.1",        # Claude Sonnet backs the frontier model tier (+ OpenAI fallback)
+  "anthropic==0.112.0",        # Claude Sonnet backs the frontier model tier (+ OpenAI fallback)
   "sentry-sdk[fastapi]>=2.17", # error tracking, gated by SENTRY_DSN
   "markdown>=3.5",             # markdown-to-HTML for the /from-markdown import preview
   "mcp>=1.0",                  # MCP server SDK for the inspira_mcp process (Claude.ai surface)
